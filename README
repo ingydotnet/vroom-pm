@@ -1,0 +1,52 @@
+NAME
+    Vroom - Slide Shows in Vim
+
+SYNOPSIS
+        > vim vroom         # Write Some Slides
+        > vroom vroom       # Compile Your Slides
+        > cd slides         # Go To Your Slides
+        > vim *             # Show Your Slides
+
+DESCRIPTION
+    Ever given a Slide Show and needed to switch over to the shell?
+
+    Now you don't ever have to switch again. You're already there.
+
+    Vroom lets you create your slides in a single file using a Wiki-like
+    style, much like Spork and Sporx do. The difference is that your slides
+    don't compile to HTML or JavaScript or XUL. They get turned into a set
+    of files in a directory called "slides".
+
+    The slides are named in alpha order. That means you can bring them all
+    into a Vim session with the command: "vim *".
+
+    Vroom creates a file called "slides/.vimrc" with many helpful key
+    mappings for navigating a slideshow. See "KEY MAPPINGS" below.
+
+    Vroom takes advantage of Vim's syntax highlighting. It also lets you run
+    slides that contain code.
+
+    Since Vim is an editor, you can change your slides during the show.
+
+KEY MAPPINGS
+    <SPACE>
+        Advance one slide
+
+    <BACKSPACE>
+        Go back one slide
+
+    <R> Run current slide as Perl
+
+    <Q> Quit Vroom
+
+AUTHOR
+    Ingy döt Net <ingy@cpan.org>
+
+COPYRIGHT
+    Copyright (c) 2008. Ingy döt Net.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+    See http://www.perl.com/perl/misc/Artistic.html
+

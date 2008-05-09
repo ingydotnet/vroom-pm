@@ -1,0 +1,4 @@
+#!/usr/bin/perl
+
+use Vroom;
+Vroom->new->run;
