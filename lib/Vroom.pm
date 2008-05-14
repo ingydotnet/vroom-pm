@@ -3,16 +3,29 @@ use 5.006001;
 use strict;
 use warnings;
 
+# use XXX;
+# use diagnostics;
+
+our $VERSION = '0.10';
+
 use IO::All;
 use YAML::XS;
 use Class::Field 'field', 'const';
 use Getopt::Long;
 use Carp;
 
-field input => '';
+field input => 'slides.vroom';
+field stream => '';
 field ext => '';
-field height => 20;
-field width => 80;
+field clean => 0;
+field vroom => 0;
+field digits => 0;
+field config => {
+    title => 'Unnamed Presentation',
+    height => 24,
+    width => 80,
+    list_indent => 10,
+};
 
 sub new {
     return bless {}, shift;
@@ -21,50 +34,78 @@ sub new {
 sub run {
     my $self = shift;
 
+    local @ARGV = @_;
+
     $self->getOptions;
+
     $self->cleanUp;
+    return if $self->clean;
+
+    $self->makeAll;
+
+    $self->startUp if $self->vroom;
 }
 
 sub getOptions {
     my $self = shift;
-    my $height = $self->height;
-    my $width = $self->width;
     GetOptions(
-        "height=i" => \$height,
-        "width=i"  => \$width,
-    );
-    $self->height($height);
-    $self->width($width);
+        "clean" => \$self->{clean},
+        "input=s"  => \$self->{input},
+        "vroom"  => \$self->{vroom},
+    ) or die $self->usage;
+
+    do { delete $self->{$_} unless defined $self->{$_} }
+        for qw(clean input vroom);
+
+    my @files = <*.vroom>;
+
+    $self->input($files[0])
+        if @files;
 }
 
 sub cleanUp {
+    unlink(glob "0*");
+    unlink(".vimrc");
+}
+
+sub makeAll {
     my $self = shift;
-    if (-e $self->dir) {
-        $_->unlink for io($self->dir)->All_Files;
-    }
+    $self->getInput;
+    $self->buildSlides;
+    $self->writeVimrc;
 }
 
 sub getInput {
     my $self = shift;
-    my $input = io('-')->all || io('vroom')->all
-        or croak "No input provided. Make a file called 'vroom'";
-    $self->input($input);
+    my $stream = io($self->input)->all
+        or croak "No input provided. Make a file called 'slides.vroom'";
+    $self->stream($stream);
 }
 
 sub buildSlides {
     my $self = shift;
-    my @raw_slides = grep length, split /^----\n/m, $self->input;
-    $self->digits = int(log(@raw_slides)/log(10)) + 2;
+    my @split = grep length, split /^(----\ *.*)\n/m, $self->stream;
+    push @split, '----' if $split[0] =~ /\n/;
+    my (@raw_configs, @raw_slides);
+    while (@split) {
+        my ($config, $slide) = splice(@split, 0, 2);
+        $config =~ s/^----\s*(.*?)\s*$/$1/;
+        push @raw_configs, $config;
+        push @raw_slides, $slide;
+    }
+    $self->{digits} = int(log(@raw_slides)/log(10)) + 2;
 
     my $number = 1;
 
     for my $raw_slide (@raw_slides) {
-        $self->ext('');
-        if ($raw_slide =~ s/^!(.*)\n//) {
-            $raw_slide = setOptions($raw_slide, $1)
-                or next;
-        }
-        $raw_slide = padVertical($raw_slide);
+        my $config = $self->parseSlideConfig(shift @raw_configs);
+        next if $config->{skip};
+
+        $raw_slide = $self->applyOptions($raw_slide, $config)
+            or next;        
+
+        $raw_slide = $self->padVertical($raw_slide);
+
         my @slides;
         my $slide = '';
         for (split /^\+/m, $raw_slide) {
@@ -76,61 +117,76 @@ sub buildSlides {
 
         my $suffix = 'a';
         for (my $i = 1; $i <= @slides; $i++) {
-            my $slide = padFullScreen($slides[$i - 1]);
+            my $slide = $self->padFullScreen($slides[$i - 1]);
             $slide =~ s{^\ *==\ *(.*?)\ *$}
-                       {' ' x (($self->width - length($1)) / 2) . $1}gem;
-            io("$base_name$suffix" . $self->ext)->print($slide);
-            $suffix++;
+                       {' ' x (($self->config->{width} - length($1)) / 2) . $1}gem;
+            my $suf = $suffix++;
+            $suf = $suf eq 'a'
+                ? ''
+                : $i == @slides
+                    ? 'z'
+                    : $suf;
+            io("$base_name$suf" . $self->ext)->print($slide);
         }
     }
 }
 
-sub writeVimrc {
+sub formatNumber {
     my $self = shift;
-    io(".vimrc")->print(<<"...");
-map <SPACE> :n<CR>:<CR>gg
-map <BACKSPACE> :N<CR>:<CR>gg
-map R :!perl %<CR>
-map Q :q!<CR>
-set laststatus=2
-set statusline=$self->{title}
-...
+    my $number = shift;
+    my $digits = $self->digits;
+    return sprintf "%0${digits}d", $number;
 }
 
-sub writeMakefile {
+sub parseSlideConfig {
     my $self = shift;
-    io("Makefile")->print(<<'...');
-trouble love tracks:
-        vim [a-z]*
-...
-}
-
-sub printFinished {
-    print "Your slide show is ready... vroom vroom!!!\n";
-}
-
-sub setOptions {
-    my $self = shift;
-    my ($slide, $options) = @_;
-    my @options = split /,/, $options;
+    my $string = shift;
     my $config = {};
-    for my $option (@options) {
-        if ($option eq 'config') {
-            $config = { %$config, %{(YAML::XS::Load($slide))} };
-            return '';
-        }
-        if ($option =~ /^c(enter)?$/) {
-            $slide =~ s{^(\+?)\ *(.*?)\ *$}
-                       {$1 . ' ' x ((78 - length($2)) / 2) . $2}gem;
-            $slide =~ s{^\s*$}{}gm;
-        }
-        if ($option =~ /^i(\d+)$/) {
-            my $indent = $1;
-            $slide =~ s{^(\+?)}{$1 . ' ' x $indent}gem;
-        }
-        if ($option =~ /^(pl|js|rb|yaml)$/) {
-            $self->ext(".$1");
-        }
+    for my $option (split /\s*,\s*/, $string) {
+        $config->{$1} = 1
+            if $option =~ /^(config|skip|center|perl|yaml)$/;
+        $config->{indent} = $1
+            if $option =~ /i(\d+)/;
+    }
+    return $config;
+}
+
+sub applyOptions {
+    my $self = shift;
+    my ($slide, $config) = @_;
+
+    $config = {
+        %{$self->config},
+        %$config,
+    };
+
+    $self->ext("");
+    if ($config->{config}) {
+        $config = {
+            %{$self->config},
+            %{(YAML::XS::Load($slide))},
+        };
+        $self->config($config);
+        return '';
+    }
+    if ($config->{center}) {
+        $slide =~ s{^(\+?)\ *(.*?)\ *$}
+                   {$1 . ' ' x (($self->config->{width} - length($2)) / 2) . $2}gem;
+        $slide =~ s{^\s*$}{}gm;
+    }
+    if (defined $config->{indent}) {
+        my $indent = $config->{indent};
+        $slide =~ s{^(\+?)}{$1 . ' ' x $indent}gem;
+    }
+    elsif ($slide =~ /^\+?\*/m) {
+        my $indent = $config->{list_indent};
+        $slide =~ s{^(\+?)}{$1 . ' ' x $indent}gem;
+    }
+    if ($config->{perl}) {
+        $self->ext(".pl");
+    }
+    if ($config->{yaml}) {
+        $self->ext(".yaml");
     }
     return $slide;
 }
@@ -142,7 +198,7 @@ sub padVertical {
     $slide =~ s/\n\s*\z//;
     my @lines = split /\n/, $slide;
     my $lines = @lines;
-    my $before = int(($self->height - $lines) / 2) - 1;
+    my $before = int(($self->config->{height} - $lines) / 2) - 1;
     return "\n" x $before . $slide;
 }
 
@@ -152,8 +208,26 @@ sub padFullScreen {
     chomp $slide;
     my @lines = split /\n/, $slide;
     my $lines = @lines;
-    my $after = $self->height - $lines + 1;
+    my $after = $self->config->{height} - $lines + 1;
     return $slide . "\n" x $after;
+}
+
+sub writeVimrc {
+    my $self = shift;
+    my $title = "%f         " . $self->config->{title};
+    $title =~ s/\s/_/g;
+    io(".vimrc")->print(<<"...");
+map <SPACE> :n<CR>:<CR>gg
+map <BACKSPACE> :N<CR>:<CR>gg
+map R :!perl %<CR>
+map Q :q!<CR>
+set laststatus=2
+set statusline=$title
+...
+}
+
+sub startUp {
+    exec "vim 0*";
 }
 
 =head1 NAME
@@ -162,7 +236,7 @@ Vroom - Slide Shows in Vim
 
 =head1 SYNOPSIS
 
-    > vim vroom         # Write Some Slides
+    > vim slides.vroom  # Write Some Slides
     > vroom --vroom     # Show Your Slides
 
 =head1 DESCRIPTION
@@ -189,11 +263,48 @@ Since Vim is an editor, you can change your slides during the show.
 
 =head1 COMMAND USAGE
 
+Vroom has a few command line options:
 
+=over
+
+=item vroom
+
+Just running vroom will compiles 'slides.vroom' into slide files.
+
+=item vroom --vroom
+
+Compile and start vim show.
+
+=item vroom --clean
+
+Clean up all the compiled  output files.
+
+=back
 
 =head1 INPUT FORMAT
 
+Here is an example slides.vroom:
 
+    ---- config
+    title: My Spiffy Slideshow
+    height: 84
+    width: 20
+    ---- center
+    My Presentation
+
+    by Ingy
+    ----
+    == Stuff I care about:
+
+    * Foo
+    +* Bar
+    +* Baz
+    ---- perl
+    use Vroom;
+
+    print "Hello World";
+    ---- center
+    THE END
 
 =head1 KEY MAPPINGS
 

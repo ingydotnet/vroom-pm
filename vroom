@@ -1,4 +1,4 @@
 #!/usr/bin/perl
 
 use Vroom;
-Vroom->new->run;
+Vroom->new->run(@ARGV);

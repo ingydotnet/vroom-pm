@@ -2,10 +2,8 @@ NAME
     Vroom - Slide Shows in Vim
 
 SYNOPSIS
-        > vim vroom         # Write Some Slides
-        > vroom vroom       # Compile Your Slides
-        > cd slides         # Go To Your Slides
-        > vim *             # Show Your Slides
+        > vim slides.vroom  # Write Some Slides
+        > vroom --vroom     # Show Your Slides
 
 DESCRIPTION
     Ever given a Slide Show and needed to switch over to the shell?
@@ -27,6 +25,42 @@ DESCRIPTION
     slides that contain code.
 
     Since Vim is an editor, you can change your slides during the show.
+
+COMMAND USAGE
+    Vroom has a few command line options:
+
+    vroom
+        Just running vroom will compiles 'slides.vroom' into slide files.
+
+    vroom --vroom
+        Compile and start vim show.
+
+    vroom --clean
+        Clean up all the compiled output files.
+
+INPUT FORMAT
+    Here is an example slides.vroom:
+
+        ---- config
+        title: My Spiffy Slideshow
+        height: 84
+        width: 20
+        ---- center
+        My Presentation
+
+        by Ingy
+        ----
+        == Stuff I care about:
+
+        * Foo
+        +* Bar
+        +* Baz
+        ---- perl
+        use Vroom;
+
+        print "Hello World";
+        ---- center
+        THE END
 
 KEY MAPPINGS
     <SPACE>
