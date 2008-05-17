@@ -1,4 +1,12 @@
 ---
+version: 0.12
+date:    Sat May 17 12:15:59 JST 2008
+changes: Update docs.
+---
+version: 0.11
+date:    Thu May 15 15:30:18 JST 2008
+changes: Move Vroom.pm to Vroom::Vroom
+---
 version: 0.10
 date:    Sun Apr 13 15:34:56 CST 2008
 changes: Initial Release

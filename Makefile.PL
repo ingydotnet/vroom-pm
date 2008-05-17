@@ -1,7 +1,7 @@
 use inc::Module::Install;
 
 name        'Vroom';
-all_from    'lib/Vroom.pm';
+all_from    'lib/Vroom/Vroom.pm';
 
 requires 'IO::All';
 requires 'YAML::XS';

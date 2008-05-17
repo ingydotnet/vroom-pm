@@ -1,5 +1,5 @@
 NAME
-    Vroom - Slide Shows in Vim
+    Vroom::Vroom - Slide Shows in Vim
 
 SYNOPSIS
         > vim slides.vroom  # Write Some Slides
@@ -13,13 +13,16 @@ DESCRIPTION
     Vroom lets you create your slides in a single file using a Wiki-like
     style, much like Spork and Sporx do. The difference is that your slides
     don't compile to HTML or JavaScript or XUL. They get turned into a set
-    of files in a directory called "slides".
+    of files that begin with '0', like '03' or '07c' or '05b.pl'.
 
     The slides are named in alpha order. That means you can bring them all
-    into a Vim session with the command: "vim *".
+    into a Vim session with the command: "vim 0*". "vroom --vroom" does
+    exactly that.
 
-    Vroom creates a file called "slides/.vimrc" with many helpful key
-    mappings for navigating a slideshow. See "KEY MAPPINGS" below.
+    Vroom creates a file called "./.vimrc" with many helpful key mappings
+    for navigating a slideshow. See "KEY MAPPINGS" below. Please note that
+    you will need the following line in your "$HOME/.vimrc" file in order to
+    pickup the local ".vimrc" file.
 
     Vroom takes advantage of Vim's syntax highlighting. It also lets you run
     slides that contain code.
@@ -39,12 +42,14 @@ COMMAND USAGE
         Clean up all the compiled output files.
 
 INPUT FORMAT
-    Here is an example slides.vroom:
+    Here is an example slides.vroom file:
 
         ---- config
+        # These are YAML settings for Vroom
         title: My Spiffy Slideshow
         height: 84
         width: 20
+        # skip: 12      # Skip 12 slides. Useful when making slides.
         ---- center
         My Presentation
 
@@ -55,8 +60,9 @@ INPUT FORMAT
         * Foo
         +* Bar
         +* Baz
-        ---- perl
-        use Vroom;
+        ---- perl,i10
+        # Perl code indented 10 spaces
+        use Vroom::Vroom;
 
         print "Hello World";
         ---- center
@@ -64,14 +70,23 @@ INPUT FORMAT
 
 KEY MAPPINGS
     <SPACE>
-        Advance one slide
+        Advance one slide.
 
     <BACKSPACE>
-        Go back one slide
+        Go back one slide.
 
-    <R> Run current slide as Perl
+    <R> Run current slide as Perl.
 
-    <Q> Quit Vroom
+    <Q> Quit Vroom.
+
+NOTE
+    Vroom is called Vroom but the module is Vroom::Vroom because the CPAN
+    shell sometimes thinks Vroom is Tim Vroom, and it refuses to install
+    him.
+
+    Use a shell command like this to install Vroom:
+
+        sudo cpan Vroom::Vroom
 
 AUTHOR
     Ingy döt Net <ingy@cpan.org>
