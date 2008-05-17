@@ -264,10 +264,13 @@ The slides are named in alpha order. That means you can bring them all
 into a Vim session with the command: C<vim 0*>. C<vroom --vroom> does
 exactly that.
 
-Vroom creates a file called C<./.vimrc> with many helpful key mappings
-for navigating a slideshow. See L<KEY MAPPINGS> below. Please note that
-you will need the following line in your C<$HOME/.vimrc> file in order
-to pickup the local C<.vimrc> file.
+Vroom creates a file called C<./.vimrc> with helpful key mappings for
+navigating a slideshow. See L<KEY MAPPINGS> below.
+
+Please note that you will need the following line in your
+C<$HOME/.vimrc> file in order to pick up the local C<.vimrc> file.
+
+    set exrc
 
 Vroom takes advantage of Vim's syntax highlighting. It also lets you run
 slides that contain code.
