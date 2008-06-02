@@ -6,12 +6,14 @@ use warnings;
 # use XXX;
 # use diagnostics;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 use IO::All;
 use YAML::XS;
 use Class::Field 'field', 'const';
 use Getopt::Long;
+use File::HomeDir;
+use Cwd;
 use Carp;
 
 field input => 'slides.vroom';
@@ -24,9 +26,7 @@ field config => {
     title => 'Untitled Presentation',
     height => 24,
     width => 80,
-    list_indent => 10,
-    skip => 0,
-};
+    list_indent => 10, skip => 0, };
 
 sub new {
     return bless {}, shift;
@@ -37,7 +37,7 @@ sub vroom {
 
     $self->getOptions;
 
-    $self->cleanUp;
+    unlink(glob "0*");
     return if $self->clean;
 
     $self->makeAll;
@@ -47,6 +47,14 @@ sub vroom {
 
 sub getOptions {
     my $self = shift;
+
+    die <<'...' if cwd eq File::HomeDir->my_home;
+
+Don't run vroom in your home directory.
+
+Create a new directory for your slides and run vroom from there.
+...
+
     GetOptions(
         "clean" => \$self->{clean},
         "input=s"  => \$self->{input},
@@ -55,11 +63,6 @@ sub getOptions {
 
     do { delete $self->{$_} unless defined $self->{$_} }
         for qw(clean input vroom);
-}
-
-sub cleanUp {
-    unlink(glob "0*");
-    unlink(".vimrc");
 }
 
 sub makeAll {
@@ -146,7 +149,11 @@ sub parseSlideConfig {
     my $config = {};
     for my $option (split /\s*,\s*/, $string) {
         $config->{$1} = 1
-            if $option =~ /^(config|skip|center|perl|yaml|make)$/;
+            if $option =~ /^(
+                config|skip|center|
+                perl|ruby|python|js|
+                yaml|make|html
+            )$/x;
         $config->{indent} = $1
             if $option =~ /i(\d+)/;
     }
@@ -188,8 +195,10 @@ sub applyOptions {
 
     my $ext = 
         $config->{perl} ? ".pl" :
+        $config->{js} ? ".js" :
         $config->{python} ? ".py" :
         $config->{ruby} ? ".rb" :
+        $config->{html} ? ".html" :
         $config->{shell} ? ".sh" :
         $config->{yaml} ? ".yaml" :
         $config->{make} ? ".mk" :
@@ -222,9 +231,23 @@ sub padFullScreen {
 
 sub writeVimrc {
     my $self = shift;
+
+    my $home_vroom = File::HomeDir->my_home . "/.vroom/vimrc";
+    my $home_vimrc = -e $home_vroom ? io($home_vroom)->all : ''; 
+
+    die <<'...'
+The .vimrc in your current directory does not look like vroom created it.
+
+If you are sure it can be overwritten, please delete it yourself this one
+time, and rerun vroom. You should not get this message again.
+
+...
+    if -e '.vimrc' and io('.vimrc')->getline !~ /Vroom-\d\.\d\d/;
+
     my $title = "%f         " . $self->config->{title};
     $title =~ s/\s/_/g;
     io(".vimrc")->print(<<"...");
+" This .vimrc file was created by Vroom-$VERSION
 map <SPACE> :n<CR>:<CR>gg
 map <BACKSPACE> :N<CR>:<CR>gg
 map R :!perl %<CR>
@@ -233,6 +256,9 @@ map O :!open <cWORD><CR>
 map E :e <cWORD><CR>
 set laststatus=2
 set statusline=$title
+
+" Overrides from $home_vroom
+$home_vimrc
 ...
 }
 
@@ -240,12 +266,16 @@ sub startUp {
     exec "vim 0*";
 }
 
+=encoding utf8
+
 =head1 NAME
 
 Vroom::Vroom - Slide Shows in Vim
 
 =head1 SYNOPSIS
 
+    > mkdir MySlides    # Make a Directory for Your Slides
+    > cd MySlides       # Go In There
     > vim slides.vroom  # Write Some Slides
     > vroom --vroom     # Show Your Slides
 
@@ -325,7 +355,81 @@ Here is an example slides.vroom file:
     ---- center
     THE END
 
+A line that starts with '==' is a header line. It will be centered.
+
+Lines that begin with a '+' cause vroom to split the slide there,
+causing an animation effect.
+
+=head1 CONFIGURATION OPTIONS
+
+Each slide can have one or more configuration options. Options are
+a comma separated list that follow the '----' header for a slide.
+Like this:
+
+    ---- center
+    ---- html
+    ---- perl,i20
+    ---- config
+    ---- skip
+
+=over
+
+=item skip
+
+Ignore the following slide completely.
+
+=item center
+
+Center the contents of the slide.
+
+=item i##
+
+'i' followed by a number means to indent the contents by the number of
+characters.
+
+=item perl,ruby,python,js,yaml,make,html
+
+Specifies that the slide is one of those syntaxen, and that the
+appropriate file extension will be used, thus causing vim to syntax
+highlight the slide.
+
+=item config
+
+The slide is really a yaml configuration. It will not be displayed
+in the presentation, but will tell vroom what to do from that point
+forward. You can use more than one config slide in your
+C<slides.vroom> file.
+
+=back
+
+You can specify the following confguration options in a config slide:
+
+=over
+
+=item title <text>
+
+The title of your presentation.
+
+=item height <number>
+
+The number of lines in the terminal you plan to use when presenting the
+show. Used for centering the content.
+
+=item width <number>
+
+The number of columns in the terminal you plan to use when presenting
+the show. Used for centering the content.
+
+=item list_indent <number>
+
+Auto detect slides that have lists in them, and indent them by the
+specified number of columns.
+
+=back
+
 =head1 KEY MAPPINGS
+
+These are the standard key mappings specified in the local C<.vimrc>.
 
 =over
 
@@ -346,6 +450,15 @@ Run current slide as Perl.
 Quit Vroom.
 
 =back
+
+=head1 CUSTOM CONFIGURATION
+
+You can create a file called C<.vroom/vimrc> in your home directory. If
+vroom sees this file, it will append it onto every local C<.vimrc> file
+it creates.
+
+Use this file to specify your own custom vim settings for all your vroom
+presentations.
 
 =head1 NOTE
 

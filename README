@@ -2,6 +2,8 @@ NAME
     Vroom::Vroom - Slide Shows in Vim
 
 SYNOPSIS
+        > mkdir MySlides    # Make a Directory for Your Slides
+        > cd MySlides       # Go In There
         > vim slides.vroom  # Write Some Slides
         > vroom --vroom     # Show Your Slides
 
@@ -19,10 +21,13 @@ DESCRIPTION
     into a Vim session with the command: "vim 0*". "vroom --vroom" does
     exactly that.
 
-    Vroom creates a file called "./.vimrc" with many helpful key mappings
-    for navigating a slideshow. See "KEY MAPPINGS" below. Please note that
-    you will need the following line in your "$HOME/.vimrc" file in order to
-    pickup the local ".vimrc" file.
+    Vroom creates a file called "./.vimrc" with helpful key mappings for
+    navigating a slideshow. See "KEY MAPPINGS" below.
+
+    Please note that you will need the following line in your "$HOME/.vimrc"
+    file in order to pick up the local ".vimrc" file.
+
+        set exrc
 
     Vroom takes advantage of Vim's syntax highlighting. It also lets you run
     slides that contain code.
@@ -68,7 +73,62 @@ INPUT FORMAT
         ---- center
         THE END
 
+    A line that starts with '==' is a header line. It will be centered.
+
+    Lines that begin with a '+' cause vroom to split the slide there,
+    causing an animation effect.
+
+CONFIGURATION OPTIONS
+    Each slide can have one or more configuration options. Options are a
+    comma separated list that follow the '----' header for a slide. Like
+    this:
+
+        ---- center
+        ---- html
+        ---- perl,i20
+        ---- config
+        ---- skip
+
+    skip
+        Ignore the following slide completely.
+
+    center
+        Center the contents of the slide.
+
+    i## 'i' followed by a number means to indent the contents by the number
+        of characters.
+
+    perl,ruby,python,js,yaml,make,html
+        Specifies that the slide is one of those syntaxen, and that the
+        appropriate file extension will be used, thus causing vim to syntax
+        highlight the slide.
+
+    config
+        The slide is really a yaml configuration. It will not be displayed
+        in the presentation, but will tell vroom what to do from that point
+        forward. You can use more than one config slide in your
+        "slides.vroom" file.
+
+    You can specify the following confguration options in a config slide:
+
+    title <text>
+        The title of your presentation.
+
+    height <number>
+        The number of lines in the terminal you plan to use when presenting
+        the show. Used for centering the content.
+
+    width <number>
+        The number of columns in the terminal you plan to use when
+        presenting the show. Used for centering the content.
+
+    list_indent <number>
+        Auto detect slides that have lists in them, and indent them by the
+        specified number of columns.
+
 KEY MAPPINGS
+    These are the standard key mappings specified in the local ".vimrc".
+
     <SPACE>
         Advance one slide.
 
@@ -78,6 +138,14 @@ KEY MAPPINGS
     <R> Run current slide as Perl.
 
     <Q> Quit Vroom.
+
+CUSTOM CONFIGURATION
+    You can create a file called ".vroom/vimrc" in your home directory. If
+    vroom sees this file, it will append it onto every local ".vimrc" file
+    it creates.
+
+    Use this file to specify your own custom vim settings for all your vroom
+    presentations.
 
 NOTE
     Vroom is called Vroom but the module is Vroom::Vroom because the CPAN
@@ -89,10 +157,10 @@ NOTE
         sudo cpan Vroom::Vroom
 
 AUTHOR
-    Ingy dÃ¶t Net <ingy@cpan.org>
+    Ingy döt Net <ingy@cpan.org>
 
 COPYRIGHT
-    Copyright (c) 2008. Ingy dÃ¶t Net.
+    Copyright (c) 2008. Ingy döt Net.
 
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.

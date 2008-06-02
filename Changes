@@ -1,4 +1,11 @@
 ---
+version: 0.13
+date:    Sun Jun  1 23:27:02 PDT 2008
+changes:
+- Support a .vroom/vimrc
+- Don't overwrite a .vimrc not created by vroom
+- Updated the docs
+---
 version: 0.12
 date:    Sat May 17 12:15:59 JST 2008
 changes: Update docs.
