@@ -20,6 +20,7 @@ field input => 'slides.vroom';
 field stream => '';
 field ext => '';
 field clean => 0;
+field compile => 0;
 field start => 0;
 field digits => 0;
 field config => {
@@ -32,6 +33,17 @@ sub new {
     return bless {}, shift;
 }
 
+sub usage {
+    return <<'...';
+    Usage: vroom [options]
+
+    -vroom      - Start slideshow
+    -compile    - Generate files
+    -clean      - Delete generated files
+    -help       - Get help!
+...
+}
+
 sub vroom {
     my $self = ref($_[0]) ? shift : (shift)->new;
 
@@ -41,6 +53,8 @@ sub vroom {
     return if $self->clean;
 
     $self->makeAll;
+
+    return if $self->compile;
 
     $self->startUp if $self->start;
 }
@@ -57,12 +71,13 @@ Create a new directory for your slides and run vroom from there.
 
     GetOptions(
         "clean" => \$self->{clean},
+        "compile" => \$self->{compile},
         "input=s"  => \$self->{input},
         "vroom"  => \$self->{start},
     ) or die $self->usage;
 
     do { delete $self->{$_} unless defined $self->{$_} }
-        for qw(clean input vroom);
+        for qw(clean compile input vroom);
 }
 
 sub makeAll {
@@ -123,6 +138,11 @@ sub buildSlides {
         my $suffix = 'a';
         for (my $i = 1; $i <= @slides; $i++) {
             my $slide = $self->padFullScreen($slides[$i - 1]);
+            chomp $slide;
+            $slide .= "\n";
+            if ($slide =~ s/^\ *!(.*\n)//m) {
+                $slide .= $1;
+            }
             $slide =~ s{^\ *==\ *(.*?)\ *$}
                        {' ' x (($self->config->{width} - length($1)) / 2) . $1}gem;
             my $suf = $suffix++;
@@ -252,8 +272,9 @@ map <SPACE> :n<CR>:<CR>gg
 map <BACKSPACE> :N<CR>:<CR>gg
 map R :!perl %<CR>
 map Q :q!<CR>
-map O :!open <cWORD><CR>
+map O :!open <cWORD><CR><CR>
 map E :e <cWORD><CR>
+map ! G:!open <cWORD><CR><CR>
 set laststatus=2
 set statusline=$title
 
