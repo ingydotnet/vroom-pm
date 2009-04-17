@@ -21,6 +21,7 @@ field stream => '';
 field ext => '';
 field clean => 0;
 field compile => 0;
+field run => 0;
 field start => 0;
 field digits => 0;
 field config => {
@@ -40,6 +41,7 @@ sub usage {
     -vroom      - Start slideshow
     -compile    - Generate files
     -clean      - Delete generated files
+    -run        - Run a slide file (perl or yaml)
     -help       - Get help!
 ...
 }
@@ -48,6 +50,8 @@ sub vroom {
     my $self = ref($_[0]) ? shift : (shift)->new;
 
     $self->getOptions;
+
+    return $self->runSlide if $self->run;
 
     unlink(glob "0*");
     return if $self->clean;
@@ -72,12 +76,32 @@ Create a new directory for your slides and run vroom from there.
     GetOptions(
         "clean" => \$self->{clean},
         "compile" => \$self->{compile},
+        "run" => \$self->{run},
         "input=s"  => \$self->{input},
         "vroom"  => \$self->{start},
     ) or die $self->usage;
 
     do { delete $self->{$_} unless defined $self->{$_} }
         for qw(clean compile input vroom);
+}
+
+sub runSlide {
+    my $self = shift;
+    my $slide = shift @ARGV;
+    if ($slide =~ /\.pl$/) {
+        exec "perl $slide";
+    }
+    if ($slide =~ /\.yaml/) {
+        my $yaml < io($slide);
+        $yaml =~ s/^\s*\n//;
+        $yaml =~ s/\n\s*$/\n/;
+        if ($yaml =~ /^    \S/) {
+            $yaml =~ s/^    //mg;
+        }
+        $yaml > io('run.yaml');
+
+        exec "perl -MYAML::XS -MData::Dumper -e '\$Data::Dumper::Terse = 1; \$Data::Dumper::Indent = 1; print Dumper YAML::XS::LoadFile(shift)' run.yaml";
+    }
 }
 
 sub makeAll {
@@ -129,7 +153,10 @@ sub buildSlides {
         my @slides;
         my $slide = '';
         for (split /^\+/m, $raw_slide) {
+            $slide = '' if $config->{replace};
             $slide .= $_;
+            $slide = $self->padVertical($slide)
+                if $config->{replace};
             push @slides, $slide;
         }
 
@@ -170,7 +197,7 @@ sub parseSlideConfig {
     for my $option (split /\s*,\s*/, $string) {
         $config->{$1} = 1
             if $option =~ /^(
-                config|skip|center|
+                config|skip|center|replace|
                 perl|ruby|python|js|
                 yaml|make|html
             )$/x;
@@ -270,7 +297,7 @@ time, and rerun vroom. You should not get this message again.
 " This .vimrc file was created by Vroom-$VERSION
 map <SPACE> :n<CR>:<CR>gg
 map <BACKSPACE> :N<CR>:<CR>gg
-map R :!perl %<CR>
+map R :!vroom -run %<CR>
 map Q :q!<CR>
 map O :!open <cWORD><CR><CR>
 map E :e <cWORD><CR>
