@@ -1,0 +1,47 @@
+---- config
+title: YAML - Discovering YAML
+indent: 5
+height: 18
+width: 69
+skip: 0
+---- center
+Vroom!
+
+by Ingy döt Net
+
+
+
+
+
+(hint: spacebar)
+----
+== Slideshows in Vim
+
+* Hate using PowerPoint or HTML Slides for Talks?
++* Use Vroom!
+
++* You can write you slides in Vim...
+* ...and display them in Vim!
+
+----
+== Getting Started
+
+* Write a file called 'slides.vroom'.
+  * Do this in a new directory.
+* Run 'vroom --vroom'.
+* Done!
+----
+== Navigation
+
+* Hit <SPACE> to move forward.
+* Hit <BACKSPACE> to go backwards.
+* Hit 'Q' to quit.
+---- perl,i4
+# This is some Perl code.
+# Notice the syntax highlighting.
+# Run it with the <R> key.
+for my $word (qw(Vroom totally rocks!)) {
+    print "$word\n";
+}
+----
+== The End
