@@ -7,7 +7,7 @@ html:
 	cp ../html/* .
 	rm -fr ../html
 
-publish:
+publish: html
 	git add .
 	git commit -a -m 'new content'
 	git push
