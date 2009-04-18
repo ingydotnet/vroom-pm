@@ -1,0 +1,14 @@
+^MANIFEST\.SKIP$
+^.git/
+^.gitignore
+^Makefile$
+^pm_to_blib$
+^blib
+^\.vimrc$
+^pyyaml
+^init.py$
+^Notes$
+^ToDo$
+^BPW-Talk
+^Review
+^Hacks/

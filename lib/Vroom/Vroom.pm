@@ -3,10 +3,7 @@ use 5.006001;
 use strict;
 use warnings;
 
-# use XXX;
-# use diagnostics;
-
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 use IO::All;
 use YAML::XS;
@@ -468,6 +465,7 @@ Vroom::Vroom - Slide Shows in Vim
     > cd MySlides       # Go In There
     > vim slides.vroom  # Write Some Slides
     > vroom --vroom     # Show Your Slides
+    > vroom --html      # Publis Your Slides as HTML
 
 =head1 DESCRIPTION
 
@@ -634,6 +632,7 @@ Go back one slide.
 =item <R>
 
 Run current slide as Perl.
+Turn a YAML slide into Data::Dumper Perl.
 
 =item <Q>
 
@@ -666,7 +665,7 @@ Ingy döt Net <ingy@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2008. Ingy döt Net.
+Copyright (c) 2008, 2009. Ingy döt Net.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

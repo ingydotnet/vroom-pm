@@ -1,4 +1,10 @@
 ---
+version: 0.15
+date:    Sat Apr 18 06:36:39 PDT 2009
+changes:
+- Fixed js bug. rafl++
+- Fixed MANIFEST.SKIP to ignore git
+---
 version: 0.14
 date:    Sat Apr 18 00:16:58 PDT 2009
 changes:
