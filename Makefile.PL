@@ -7,6 +7,7 @@ requires 'IO::All';
 requires 'YAML::XS';
 requires 'Class::Field';
 requires 'File::HomeDir';
+requires 'Template::Toolkit::Simple';
 
 install_script 'vroom';
 

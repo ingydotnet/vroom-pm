@@ -1,4 +1,11 @@
 ---
+version: 0.14
+date:    Sat Apr 18 00:16:58 PDT 2009
+changes:
+- Support 'R'un for YAML
+- Output slides as html
+- Add an example slideshow
+---
 version: 0.13
 date:    Sun Jun  1 23:27:02 PDT 2008
 changes:
