@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>03</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>
+function navigate(e) {
+    console
+    var keynum = (window.event) // IE
+        ? e.keyCode
+        : e.which;
+    if (keynum == 8) {
+        window.location = "02z" + ".html";
+        return false;
+    }
+    if (keynum == 13 || keynum == 32) {
+        window.location = "04" + ".html";
+        return false;
+    }
+    if (keynum == 73 || keynum == 105) {
+        window.location = "index.html";
+        return false;
+    }
+    return true;
+}
+</script>
+</head>
+<body onkeypress="return navigate(event)">
+<pre>
+
+
+
+
+                           Getting Started
+     
+     * Write a file called 'slides.vroom'.
+       * Do this in a new directory.
+     * Run 'vroom --vroom'.
+     * Done!
+
+
+
+
+
+
+
+</pre>
+</body>

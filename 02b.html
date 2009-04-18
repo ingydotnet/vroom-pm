@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>02b</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>
+function navigate(e) {
+    console
+    var keynum = (window.event) // IE
+        ? e.keyCode
+        : e.which;
+    if (keynum == 8) {
+        window.location = "02" + ".html";
+        return false;
+    }
+    if (keynum == 13 || keynum == 32) {
+        window.location = "02z" + ".html";
+        return false;
+    }
+    if (keynum == 73 || keynum == 105) {
+        window.location = "index.html";
+        return false;
+    }
+    return true;
+}
+</script>
+</head>
+<body onkeypress="return navigate(event)">
+<pre>
+
+
+
+                          Slideshows in Vim
+     
+     * Hate using PowerPoint or HTML Slides for Talks?
+     * Use Vroom!
+     
+
+
+
+
+
+
+
+
+
+</pre>
+</body>

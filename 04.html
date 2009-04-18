@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>04</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>
+function navigate(e) {
+    console
+    var keynum = (window.event) // IE
+        ? e.keyCode
+        : e.which;
+    if (keynum == 8) {
+        window.location = "03" + ".html";
+        return false;
+    }
+    if (keynum == 13 || keynum == 32) {
+        window.location = "05.pl" + ".html";
+        return false;
+    }
+    if (keynum == 73 || keynum == 105) {
+        window.location = "index.html";
+        return false;
+    }
+    return true;
+}
+</script>
+</head>
+<body onkeypress="return navigate(event)">
+<pre>
+
+
+
+
+                             Navigation
+     
+     * Hit &lt;SPACE&gt; to move forward.
+     * Hit &lt;BACKSPACE&gt; to go backwards.
+     * Hit 'Q' to quit.
+
+
+
+
+
+
+
+
+</pre>
+</body>

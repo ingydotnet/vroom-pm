@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>05.pl</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>
+function navigate(e) {
+    console
+    var keynum = (window.event) // IE
+        ? e.keyCode
+        : e.which;
+    if (keynum == 8) {
+        window.location = "04" + ".html";
+        return false;
+    }
+    if (keynum == 13 || keynum == 32) {
+        window.location = "06" + ".html";
+        return false;
+    }
+    if (keynum == 73 || keynum == 105) {
+        window.location = "index.html";
+        return false;
+    }
+    return true;
+}
+</script>
+</head>
+<body onkeypress="return navigate(event)">
+<pre>
+
+
+
+
+    # This is some Perl code.
+    # Notice the syntax highlighting.
+    # Run it with the &lt;R&gt; key.
+    for my $word (qw(Vroom totally rocks!)) {
+        print &quot;$word\n&quot;;
+    }
+
+
+
+
+
+
+
+</pre>
+</body>
