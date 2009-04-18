@@ -6,5 +6,8 @@ clean:
 html:
 	cp ../html/* .
 	rm -fr ../html
+
+publish:
 	git add .
-	git status
+	git commit -a -m 'new content'
+	git push
