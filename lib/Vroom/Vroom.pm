@@ -222,7 +222,6 @@ sub slideTemplate {
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <script>
 function navigate(e) {
-    console
     var keynum = (window.event) // IE
         ? e.keyCode
         : e.which;
