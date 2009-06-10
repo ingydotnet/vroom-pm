@@ -3,7 +3,7 @@ use 5.006001;
 use strict;
 use warnings;
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 use IO::All;
 use YAML::XS;
@@ -23,6 +23,7 @@ field run => 0;
 field html => 0;
 field start => 0;
 field digits => 0;
+field skip => 0;
 field config => {
     title => 'Untitled Presentation',
     height => 24,
@@ -95,6 +96,7 @@ Create a new directory for your slides and run vroom from there.
         "html" => \$self->{html},
         "input=s"  => \$self->{input},
         "vroom"  => \$self->{start},
+        "skip=i" => \$self->{skip},
     ) or die $self->usage;
 
     do { delete $self->{$_} unless defined $self->{$_} }
@@ -282,8 +284,9 @@ sub buildSlides {
 
         $number++;
 
-        if ($self->config->{skip}) {
-            $self->config->{skip}--;
+        if ($self->config->{skip} or $self->skip) {
+            $self->config->{skip}-- if $self->config->{skip};
+            $self->{skip}-- if $self->{skip};
             next;
         }
 
@@ -309,7 +312,7 @@ sub buildSlides {
             if ($slide =~ s/^\ *!(.*\n)//m) {
                 $slide .= $1;
             }
-            $slide =~ s{^\ *==\ *(.*?)\ *$}
+            $slide =~ s{^\ *==\ +(.*?)\ *$}
                        {' ' x (($self->config->{width} - length($1)) / 2) . $1}gem;
             my $suf = $suffix++;
             $suf = $suf eq 'a'

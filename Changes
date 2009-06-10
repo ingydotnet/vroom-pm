@@ -1,4 +1,10 @@
 ---
+version: 0.16
+date:    Tue Jun  9 22:44:20 PDT 2009
+changes:
+- Allow lines the start '==='
+- Add a 'skip' CLI option
+---
 version: 0.15
 date:    Sat Apr 18 06:36:39 PDT 2009
 changes:
