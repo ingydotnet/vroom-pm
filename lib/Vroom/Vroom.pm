@@ -372,8 +372,7 @@ sub applyOptions {
                    {$1 . ' ' x (($self->config->{width} - length($2)) / 2) . $2}gem;
         $slide =~ s{^\s*$}{}gm;
     }
-
-    if (defined $config->{indent}) {
+    elsif (defined $config->{indent}) {
         my $indent = $config->{indent};
         $slide =~ s{^(\+?)}{$1 . ' ' x $indent}gem;
     }
