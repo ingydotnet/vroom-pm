@@ -126,8 +126,13 @@ sub runSlide {
         my $yaml < io($slide);
         $yaml =~ s/^\s*\n//;
         $yaml =~ s/\n\s*$/\n/;
-        if ($yaml =~ /^    \S/) {
-            $yaml =~ s/^    //mg;
+        if ($yaml =~ /^( +)\S/) {
+            my $l = length($1);
+            $yaml =~ s/^ {$l}//mg;
+        }
+        if ($yaml =~ /^( +)---\s/m) {
+            my $l = length($1);
+            $yaml =~ s/^ {$l}//mg;
         }
         $yaml > io('run.yaml');
 
