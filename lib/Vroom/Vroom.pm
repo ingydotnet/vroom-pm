@@ -107,7 +107,7 @@ sub cleanUp {
     my $self = shift;
     unlink(glob "0*");
     unlink('.vimrc');
-    unlink('run.yaml');
+    unlink('run.slide');
 }
 
 sub cleanAll {
@@ -118,26 +118,49 @@ sub cleanAll {
 
 sub runSlide {
     my $self = shift;
-    my $slide = shift @ARGV;
-    if ($slide =~ /\.pl$/) {
-        exec "perl $slide";
-    }
-    if ($slide =~ /\.yaml/) {
-        my $yaml < io($slide);
-        $yaml =~ s/^\s*\n//;
-        $yaml =~ s/\n\s*$/\n/;
-        if ($yaml =~ /^( +)\S/) {
-            my $l = length($1);
-            $yaml =~ s/^ {$l}//mg;
-        }
-        if ($yaml =~ /^( +)---\s/m) {
-            my $l = length($1);
-            $yaml =~ s/^ {$l}//mg;
-        }
-        $yaml > io('run.yaml');
+    my $slide = $ARGV[0];
 
-        exec "perl -MYAML::XS -MData::Dumper -e '\$Data::Dumper::Terse = 1; \$Data::Dumper::Indent = 1; print Dumper YAML::XS::LoadFile(shift)' run.yaml";
+    if ($slide =~ /\.pl$/) {
+        $self->trim_slide;
+        exec "clear; perl run.slide";
     }
+    elsif ($slide =~ /\.py$/) {
+        $self->trim_slide;
+        exec "clear; python run.slide";
+    }
+    elsif ($slide =~ /\.rb$/) {
+        $self->trim_slide;
+        exec "clear; ruby run.slide";
+    }
+    elsif ($slide =~ /\.php$/) {
+        $self->trim_slide;
+        exec "clear; php run.slide";
+    }
+    elsif ($slide =~ /\.js$/) {
+        $self->trim_slide;
+        exec "clear; js run.slide";
+    }
+    elsif ($slide =~ /\.hs$/) {
+        $self->trim_slide;
+        exec "clear; runghc run.slide";
+    }
+    elsif ($slide =~ /\.yaml$/) {
+        $self->trim_slide;
+        exec "clear; perl -MYAML::XS -MData::Dumper -e '\$Data::Dumper::Terse = 1; \$Data::Dumper::Indent = 1; print Dumper YAML::XS::LoadFile(shift)' run.slide";
+    }
+}
+
+sub trim_slide {
+    my $self = shift;
+    my $slide = $ARGV[0];
+
+    my $text < io($slide);
+    $text =~ s/^\s*\n//;
+    $text =~ s/\n\s*$/\n/;
+    while ($text !~ /^\S/m) {
+        $text =~ s/^ //mg;
+    }
+    $text > io('run.slide');
 }
 
 sub makeSlides {
@@ -200,8 +223,29 @@ sub indexTemplate {
 <head>
 <title>[% config.title | html %]</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>
+function navigate(e) {
+    var keynum = (window.event) // IE
+        ? e.keyCode
+        : e.which;
+    if (keynum == 13 || keynum == 32) {
+        window.location = "001.html";
+        return false;
+    }
+    return true;
+}
+</script>
+<style>
+body {
+    font-family: sans-serif;
+}
+h4 {
+    color: #888;
+}
+</style>
 </head>
 <body>
+<h4>Use SPACEBAR to peruse the slides or click one to start...<h4>
 <h1>[% config.title | html %]</h1>
 <ul>
 [% FOR entry = index -%]
@@ -345,8 +389,9 @@ sub parseSlideConfig {
         $config->{$1} = 1
             if $option =~ /^(
                 config|skip|center|replace|
-                perl|ruby|python|js|
-                yaml|make|html
+                perl|ruby|python|php|haskell|
+                js|javascript|java|as|actionscript|
+                yaml|xml|json|make|html
             )$/x;
         $config->{indent} = $1
             if $option =~ /i(\d+)/;
@@ -387,14 +432,22 @@ sub applyOptions {
     }
 
     my $ext = 
-        $config->{perl} ? ".pl" :
+        $config->{actionscript} ? ".as" :
+        $config->{as} ? ".as" :
+        $config->{haskell} ? ".hs" :
+        $config->{html} ? ".html" :
+        $config->{javascript} ? ".js" :
+        $config->{java} ? ".java" :
         $config->{js} ? ".js" :
+        $config->{json} ? ".json" :
+        $config->{make} ? ".mk" :
+        $config->{perl} ? ".pl" :
+        $config->{php} ? ".php" :
         $config->{python} ? ".py" :
         $config->{ruby} ? ".rb" :
-        $config->{html} ? ".html" :
         $config->{shell} ? ".sh" :
+        $config->{xml} ? ".xml" :
         $config->{yaml} ? ".yaml" :
-        $config->{make} ? ".mk" :
         "";
     $self->ext($ext);
 
@@ -444,6 +497,7 @@ time, and rerun vroom. You should not get this message again.
 map <SPACE> :n<CR>:<CR>gg
 map <BACKSPACE> :N<CR>:<CR>gg
 map R :!vroom -run %<CR>
+map VV :!vroom -vroom<CR>
 map Q :q!<CR>
 map O :!open <cWORD><CR><CR>
 map E :e <cWORD><CR>
