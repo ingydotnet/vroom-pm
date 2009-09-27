@@ -3,7 +3,7 @@ use 5.006001;
 use strict;
 use warnings;
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 use IO::All;
 use YAML::XS;
@@ -120,7 +120,7 @@ sub runSlide {
     my $self = shift;
     my $slide = shift @ARGV;
     if ($slide =~ /\.pl$/) {
-        exec "perl $slide";
+        exec "$^X $slide";
     }
     if ($slide =~ /\.yaml/) {
         my $yaml < io($slide);
@@ -136,7 +136,7 @@ sub runSlide {
         }
         $yaml > io('run.yaml');
 
-        exec "perl -MYAML::XS -MData::Dumper -e '\$Data::Dumper::Terse = 1; \$Data::Dumper::Indent = 1; print Dumper YAML::XS::LoadFile(shift)' run.yaml";
+        exec "$^X -MYAML::XS -MData::Dumper -e '\$Data::Dumper::Terse = 1; \$Data::Dumper::Indent = 1; print Dumper YAML::XS::LoadFile(shift)' run.yaml";
     }
 }
 
@@ -345,8 +345,8 @@ sub parseSlideConfig {
         $config->{$1} = 1
             if $option =~ /^(
                 config|skip|center|replace|
-                perl|ruby|python|js|
-                yaml|make|html
+                perl|ruby|python|js|shell|
+                yaml|make|html|conf
             )$/x;
         $config->{indent} = $1
             if $option =~ /i(\d+)/;
@@ -582,7 +582,7 @@ Center the contents of the slide.
 'i' followed by a number means to indent the contents by the number of
 characters.
 
-=item perl,ruby,python,js,yaml,make,html
+=item perl,ruby,python,js,yaml,make,html,shell
 
 Specifies that the slide is one of those syntaxen, and that the
 appropriate file extension will be used, thus causing vim to syntax
