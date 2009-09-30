@@ -317,6 +317,10 @@ sub buildSlides {
             if ($slide =~ s/^\ *!(.*\n)//m) {
                 $slide .= $1;
             }
+            if ($config->{strip_indent} ){  # this option can't be applied ahead of time
+                my $strip = $config->{strip_indent};
+                $slide =~ s/^.{$strip}//gm;
+            }
             $slide =~ s{^\ *==\ +(.*?)\ *$}
                        {' ' x (($self->config->{width} - length($1)) / 2) . $1}gem;
             my $suf = $suffix++;
@@ -346,10 +350,12 @@ sub parseSlideConfig {
             if $option =~ /^(
                 config|skip|center|replace|
                 perl|ruby|python|js|shell|
-                yaml|make|html|conf
+                diff|yaml|make|html|conf
             )$/x;
         $config->{indent} = $1
             if $option =~ /i(\d+)/;
+        $config->{strip_indent} = $1
+            if $option =~ /i-(\d+)/;
     }
     return $config;
 }
@@ -395,6 +401,7 @@ sub applyOptions {
         $config->{shell} ? ".sh" :
         $config->{yaml} ? ".yaml" :
         $config->{make} ? ".mk" :
+        $config->{diff} ? ".diff" :
         "";
     $self->ext($ext);
 
@@ -582,7 +589,14 @@ Center the contents of the slide.
 'i' followed by a number means to indent the contents by the number of
 characters.
 
-=item perl,ruby,python,js,yaml,make,html,shell
+=item i-##
+
+'i' followed by a negative number means to strip that number of leading 
+characters from the contents of the slide.  This can be useful if you need
+to have characters special to Vroom::Vroom at the beginning of your lines,
+for example if the contents of your slide is unified diff output.
+
+=item perl,ruby,python,js,yaml,make,html,shell,diff
 
 Specifies that the slide is one of those syntaxen, and that the
 appropriate file extension will be used, thus causing vim to syntax
