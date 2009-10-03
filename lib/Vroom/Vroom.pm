@@ -30,6 +30,7 @@ field config => {
     width => 80,
     list_indent => 10,
     skip => 0,
+    vim => 'vim',
 };
 
 sub new {
@@ -107,6 +108,7 @@ sub cleanUp {
     my $self = shift;
     unlink(glob "0*");
     unlink('.vimrc');
+    unlink('.gvimrc');
     unlink('run.slide');
 }
 
@@ -303,8 +305,13 @@ function navigate(e) {
 
 sub getInput {
     my $self = shift;
-    my $stream = io($self->input)->all
+    my @stream = io($self->input)->slurp
         or croak "No input provided. Make a file called 'slides.vroom'";
+    my $stream = join '', map {
+        /^----\s+include\s+(\S+)/
+        ? scalar(io($1)->all)
+        : $_
+    } @stream;
     $self->stream($stream);
 }
 
@@ -478,8 +485,8 @@ sub padFullScreen {
 sub writeVimrc {
     my $self = shift;
 
-    my $home_vroom = File::HomeDir->my_home . "/.vroom/vimrc";
-    my $home_vimrc = -e $home_vroom ? io($home_vroom)->all : ''; 
+    my $home_vimrc = File::HomeDir->my_home . "/.vroom/vimrc";
+    my $home_vimrc_content = -e $home_vimrc ? io($home_vimrc)->all : ''; 
 
     die <<'...'
 The .vimrc in your current directory does not look like vroom created it.
@@ -490,8 +497,8 @@ time, and rerun vroom. You should not get this message again.
 ...
     if -e '.vimrc' and io('.vimrc')->getline !~ /Vroom-\d\.\d\d/;
 
-    my $title = "%f         " . $self->config->{title};
-    $title =~ s/\s/_/g;
+    my $title = "%-20f " . $self->config->{title};
+    $title =~ s/\s/\\ /g;
     io(".vimrc")->print(<<"...");
 " This .vimrc file was created by Vroom-$VERSION
 map <SPACE> :n<CR>:<CR>gg
@@ -505,13 +512,27 @@ map ! G:!open <cWORD><CR><CR>
 set laststatus=2
 set statusline=$title
 
-" Overrides from $home_vroom
-$home_vimrc
+" Overrides from $home_vimrc
+$home_vimrc_content
 ...
+
+    if ($self->config->{vim} =~ /\bgvim\b/) {
+        my $home_gvimrc = File::HomeDir->my_home . "/.vroom/gvimrc";
+        my $home_gvimrc_content = -e $home_gvimrc ? io($home_gvimrc)->all : ''; 
+
+        io(".gvimrc")->print(<<"...");
+set fuopt=maxhorz,maxvert
+set guioptions-=r
+set guifont=${\ $self->config->{guifont}}
+set guicursor=a:blinkon0-ver25-Cursor
+...
+    }
 }
 
 sub startUp {
-    exec "vim 0*";
+    my $self = shift;
+    my $vim = $self->config->{vim};
+    exec "$vim 0*";
 }
 
 =encoding utf8
@@ -674,6 +695,11 @@ the show. Used for centering the content.
 Auto detect slides that have lists in them, and indent them by the
 specified number of columns.
 
+=item vim <name>
+
+You can specify the name of the vim executable to use. If you set this to
+C<gvim> special gvim support will be provided.
+
 =back
 
 =head1 KEY MAPPINGS
@@ -710,6 +736,9 @@ it creates.
 Use this file to specify your own custom vim settings for all your vroom
 presentations.
 
+You can also create a file called C<.vroom/gvimrc> for gvim overrides,
+if you are using gvim.
+
 =head1 NOTE
 
 Vroom is called Vroom but the module is Vroom::Vroom because the
@@ -719,6 +748,20 @@ install him.
 Use a shell command like this to install Vroom:
 
     sudo cpan Vroom::Vroom
+
+=head1 USING MacVim OR gvim
+
+If you have a Mac, you really should try using MacVim for Vroom slide
+shows. You can run it in fullscreen mode, and it looks kinda
+professional.
+
+To do this, set the vim option in your config section:
+
+    vim: gvim
+
+NOTE: On my Mac, I have gvim symlinked to mvim, which is a smart startup
+      script that ships with MacVim. Ping me, if you have questions
+      about this setup.
 
 =head1 AUTHOR
 
