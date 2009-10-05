@@ -3,7 +3,7 @@ use 5.006001;
 use strict;
 use warnings;
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 use IO::All;
 use YAML::XS;
@@ -123,8 +123,7 @@ sub runSlide {
     my $slide = $ARGV[0];
 
     if ($slide =~ /\.pl$/) {
-        $self->trim_slide;
-        exec "clear; perl run.slide";
+        exec "clear; $^X $slide";
     }
     elsif ($slide =~ /\.py$/) {
         $self->trim_slide;
@@ -148,7 +147,7 @@ sub runSlide {
     }
     elsif ($slide =~ /\.yaml$/) {
         $self->trim_slide;
-        exec "clear; perl -MYAML::XS -MData::Dumper -e '\$Data::Dumper::Terse = 1; \$Data::Dumper::Indent = 1; print Dumper YAML::XS::LoadFile(shift)' run.slide";
+        exec "clear; $^X -MYAML::XS -MData::Dumper -e '\$Data::Dumper::Terse = 1; \$Data::Dumper::Indent = 1; print Dumper YAML::XS::LoadFile(shift)' run.slide";
     }
 }
 
@@ -368,6 +367,10 @@ sub buildSlides {
             if ($slide =~ s/^\ *!(.*\n)//m) {
                 $slide .= $1;
             }
+            if ($config->{strip_indent} ){  # this option can't be applied ahead of time
+                my $strip = $config->{strip_indent};
+                $slide =~ s/^.{$strip}//gm;
+            }
             $slide =~ s{^\ *==\ +(.*?)\ *$}
                        {' ' x (($self->config->{width} - length($1)) / 2) . $1}gem;
             my $suf = $suffix++;
@@ -398,10 +401,13 @@ sub parseSlideConfig {
                 config|skip|center|replace|
                 perl|ruby|python|php|haskell|
                 js|javascript|java|as|actionscript|
-                yaml|xml|json|make|html
+                yaml|xml|json|make|html|
+                shell|diff|conf
             )$/x;
         $config->{indent} = $1
             if $option =~ /i(\d+)/;
+        $config->{strip_indent} = $1
+            if $option =~ /i-(\d+)/;
     }
     return $config;
 }
@@ -455,6 +461,9 @@ sub applyOptions {
         $config->{shell} ? ".sh" :
         $config->{xml} ? ".xml" :
         $config->{yaml} ? ".yaml" :
+        $config->{shell} ? ".sh" :
+        $config->{make} ? ".mk" :
+        $config->{diff} ? ".diff" :
         "";
     $self->ext($ext);
 
@@ -657,7 +666,14 @@ Center the contents of the slide.
 'i' followed by a number means to indent the contents by the number of
 characters.
 
-=item perl,ruby,python,js,yaml,make,html
+=item i-##
+
+'i' followed by a negative number means to strip that number of leading 
+characters from the contents of the slide.  This can be useful if you need
+to have characters special to Vroom::Vroom at the beginning of your lines,
+for example if the contents of your slide is unified diff output.
+
+=item perl,ruby,python,js,yaml,make,html,shell,diff
 
 Specifies that the slide is one of those syntaxen, and that the
 appropriate file extension will be used, thus causing vim to syntax

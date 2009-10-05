@@ -1,0 +1,6 @@
+Makefile
+*~
+*.sw?
+pm_to_blib
+blib/*
+inc/*
