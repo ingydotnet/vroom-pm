@@ -1,8 +1,17 @@
 ---
+version: 0.17
+date:    Mon Oct  5 02:48:33 PDT 2009
+changes:
+- Fairly major refactoring.
+- Update the docs with all the latest features
+- Add support for gvim (macvim)
+- Promote github and gh-pages in the docs
+- Merge negative indent support from jlavallee++
+---
 version: 0.16
 date:    Tue Jun  9 22:44:20 PDT 2009
 changes:
-- Allow lines the start '==='
+- Allow lines that start '==='
 - Add a 'skip' CLI option
 ---
 version: 0.15

@@ -19,6 +19,7 @@ field ext => '';
 field help => 0;
 field clean => 0;
 field compile => 0;
+field sample => 0;
 field run => 0;
 field html => 0;
 field start => 0;
@@ -31,6 +32,11 @@ field config => {
     list_indent => 10,
     skip => 0,
     vim => 'vim',
+    # gvim options
+    fuopt => 'maxhorz,maxvert',
+    guioptions => 'egmLtT',
+    guicursor => 'a:blinkon0-ver25-Cursor',
+    guifont => 'Bitstream_Vera_Sans_Mono:h18',
 };
 
 sub new {
@@ -41,11 +47,15 @@ sub usage {
     return <<'...';
     Usage: vroom [options]
 
+    -new        - Create a sample 'slides.vroom' file
     -vroom      - Start slideshow
-    -compile    - Generate files
+    -compile    - Generate slides
+    -html       - Publish slides as HTML
+
+    -skip=#     - Skip # of slides
+    -input=name - Specify an input file name
+
     -clean      - Delete generated files
-    -run        - Run a slide file (perl or yaml)
-    -html       - Publish as HTML
     -help       - Get help!
 ...
 }
@@ -55,7 +65,10 @@ sub vroom {
 
     $self->getOptions;
 
-    if ($self->run) {
+    if ($self->sample) {
+        $self->sampleSlides;
+    }
+    elsif ($self->run) {
         $self->runSlide;
     }
     elsif ($self->clean) {
@@ -91,6 +104,7 @@ Create a new directory for your slides and run vroom from there.
 
     GetOptions(
         "help" => \$self->{help},
+        "new" => \$self->{sample},
         "clean" => \$self->{clean},
         "compile" => \$self->{compile},
         "run" => \$self->{run},
@@ -107,6 +121,7 @@ Create a new directory for your slides and run vroom from there.
 sub cleanUp {
     my $self = shift;
     unlink(glob "0*");
+    unlink('.help');
     unlink('.vimrc');
     unlink('.gvimrc');
     unlink('run.slide');
@@ -125,28 +140,25 @@ sub runSlide {
     if ($slide =~ /\.pl$/) {
         exec "clear; $^X $slide";
     }
-    elsif ($slide =~ /\.py$/) {
-        $self->trim_slide;
+
+    $self->trim_slide;
+
+    if ($slide =~ /\.py$/) {
         exec "clear; python run.slide";
     }
     elsif ($slide =~ /\.rb$/) {
-        $self->trim_slide;
         exec "clear; ruby run.slide";
     }
     elsif ($slide =~ /\.php$/) {
-        $self->trim_slide;
         exec "clear; php run.slide";
     }
     elsif ($slide =~ /\.js$/) {
-        $self->trim_slide;
         exec "clear; js run.slide";
     }
     elsif ($slide =~ /\.hs$/) {
-        $self->trim_slide;
         exec "clear; runghc run.slide";
     }
     elsif ($slide =~ /\.yaml$/) {
-        $self->trim_slide;
         exec "clear; $^X -MYAML::XS -MData::Dumper -e '\$Data::Dumper::Terse = 1; \$Data::Dumper::Indent = 1; print Dumper YAML::XS::LoadFile(shift)' run.slide";
     }
 }
@@ -170,6 +182,7 @@ sub makeSlides {
     $self->getInput;
     $self->buildSlides;
     $self->writeVimrc;
+    $self->writeHelp;
 }
 
 sub makeHTML {
@@ -316,7 +329,9 @@ sub getInput {
 
 sub buildSlides {
     my $self = shift;
-    my @split = grep length, split /^(----\ *.*)\n/m, $self->stream;
+    my @split = split /^(----\ *.*)\n/m, $self->stream;
+    shift @split;
+    @split = grep length, @split;
     push @split, '----' if $split[0] =~ /\n/;
     my (@raw_configs, @raw_slides);
     while (@split) {
@@ -367,9 +382,10 @@ sub buildSlides {
             if ($slide =~ s/^\ *!(.*\n)//m) {
                 $slide .= $1;
             }
-            if ($config->{strip_indent} ){  # this option can't be applied ahead of time
-                my $strip = $config->{strip_indent};
-                $slide =~ s/^.{$strip}//gm;
+            # this option can't be applied ahead of time
+            if ($config->{undent}) {
+                my $undent = $config->{undent};
+                $slide =~ s/^.{$undent}//gm;
             }
             $slide =~ s{^\ *==\ +(.*?)\ *$}
                        {' ' x (($self->config->{width} - length($1)) / 2) . $1}gem;
@@ -391,22 +407,35 @@ sub formatNumber {
     return sprintf "%0${digits}d", $number;
 }
 
+my $types = {
+    perl => 'pl', pl => 'pl',
+    ruby => 'rb', rb => 'rb',
+    python => 'py', py => 'py',
+    haskell => 'hs', hs => 'hs',
+    javascript => 'js', js => 'js',
+    actionscript => 'as', as => 'as',
+    shell => 'sh', sh => 'sh',
+    php => 'php',
+    java => 'java',
+    yaml => 'yaml',
+    xml => 'xml',
+    json => 'json',
+    html => 'html',
+    make => 'make',
+    diff => 'diff',
+    conf => 'conf',
+};
 sub parseSlideConfig {
     my $self = shift;
     my $string = shift;
     my $config = {};
+    my $type_list = join '|', keys %$types;
     for my $option (split /\s*,\s*/, $string) {
         $config->{$1} = 1
-            if $option =~ /^(
-                config|skip|center|replace|
-                perl|ruby|python|php|haskell|
-                js|javascript|java|as|actionscript|
-                yaml|xml|json|make|html|
-                shell|diff|conf
-            )$/x;
+            if $option =~ /^(config|skip|center|replace|$type_list)$/;
         $config->{indent} = $1
             if $option =~ /i(\d+)/;
-        $config->{strip_indent} = $1
+        $config->{undent} = $1
             if $option =~ /i-(\d+)/;
     }
     return $config;
@@ -444,27 +473,13 @@ sub applyOptions {
         $slide =~ s{^(\+?)}{$1 . ' ' x $indent}gem;
     }
 
-    my $ext = 
-        $config->{actionscript} ? ".as" :
-        $config->{as} ? ".as" :
-        $config->{haskell} ? ".hs" :
-        $config->{html} ? ".html" :
-        $config->{javascript} ? ".js" :
-        $config->{java} ? ".java" :
-        $config->{js} ? ".js" :
-        $config->{json} ? ".json" :
-        $config->{make} ? ".mk" :
-        $config->{perl} ? ".pl" :
-        $config->{php} ? ".php" :
-        $config->{python} ? ".py" :
-        $config->{ruby} ? ".rb" :
-        $config->{shell} ? ".sh" :
-        $config->{xml} ? ".xml" :
-        $config->{yaml} ? ".yaml" :
-        $config->{shell} ? ".sh" :
-        $config->{make} ? ".mk" :
-        $config->{diff} ? ".diff" :
-        "";
+    my $ext = '';
+    for my $key (keys %$config) {
+        if (my $e = $types->{$key}) {
+            $ext = $e;
+            last;
+        }
+    }
     $self->ext($ext);
 
     return $slide;
@@ -513,11 +528,13 @@ time, and rerun vroom. You should not get this message again.
 map <SPACE> :n<CR>:<CR>gg
 map <BACKSPACE> :N<CR>:<CR>gg
 map R :!vroom -run %<CR>
+map RR :!vroom -run %<CR>
 map VV :!vroom -vroom<CR>
-map Q :q!<CR>
-map O :!open <cWORD><CR><CR>
-map E :e <cWORD><CR>
-map ! G:!open <cWORD><CR><CR>
+map QQ :q!<CR>
+map OO :!open <cWORD><CR><CR>
+map EE :e <cWORD><CR>
+map !! G:!open <cWORD><CR><CR>
+map ?? :e .help
 set laststatus=2
 set statusline=$title
 
@@ -530,18 +547,123 @@ $home_vimrc_content
         my $home_gvimrc_content = -e $home_gvimrc ? io($home_gvimrc)->all : ''; 
 
         io(".gvimrc")->print(<<"...");
-set fuopt=maxhorz,maxvert
-set guioptions-=r
+set fuopt=${\ $self->config->{fuopt}}
+set guioptions=${\ $self->config->{guioptions}}
 set guifont=${\ $self->config->{guifont}}
-set guicursor=a:blinkon0-ver25-Cursor
+set guicursor=${\ $self->config->{guicursor}}
+
+" Overrides from $home_gvimrc
+$home_gvimrc_content
 ...
     }
+}
+
+sub writeHelp {
+    my $self = shift;
+    io('.help')->print(<<'...');
+<SPACE>         Advance
+<BACKSPACE>     Go back
+
+??              Help
+RR              Run
+QQ              Quit Vroom.
+VV              vroom --vroom 
+EE              Edit file under cursor
+OO              Open file under cursor (Mac OS X)
+...
 }
 
 sub startUp {
     my $self = shift;
     my $vim = $self->config->{vim};
     exec "$vim 0*";
+}
+
+sub sampleSlides {
+    my $self = shift;
+    my $file = $self->input;
+    die <<"..." if -e $file;
+'$file' already exists.
+
+If you really want to generate a new template slides file,
+please delete or move this one.
+...
+    io($file)->print(<<'...');
+# This is a sample Vroom input file. It should help you get started.
+#
+# Edit this file with your content. Then run `vroom --vroom` to start
+# the show!
+#
+# See `perldoc Vroom::Vroom` for complete details.
+#
+---- config
+# Basic config options.
+title: Vroom!
+indent: 5
+height: 18
+width: 69
+skip: 0
+
+# The following options are for Gvim usage.
+# vim: gvim
+# fuopt: maxhorz,maxvert
+# guioptions: egmLtT
+# guicursor: a:blinkon0-ver25-Cursor
+# guifont: Bitstream_Vera_Sans_Mono:h18
+
+---- center
+Vroom!
+
+by Ingy döt Net
+
+(hint: press the spacebar)
+
+----
+== Slideshows in Vim
+
+* Hate using PowerPoint or HTML Slides for Talks?
++* Use Vroom!
+
++* You can write you slides in Vim...
+* ...and present them in Vim!
+
+----
+== Getting Started
+
+* Write a file called 'slides.vroom'.
+  * Do this in a new directory.
+* Run 'vroom --vroom'.
+* Voilà!
+
+----
+== Navigation
+
+* Hit <SPACE> to move forward.
+* Hit <BACKSPACE> to go backwards.
+* Hit 'Q' to quit.
+
+---- perl,i4
+# This is some Perl code.
+# Notice the syntax highlighting.
+# Run it with the <RR> vim command.
+for my $word (qw(Vroom totally rocks!)) {
+    print "$word\n";
+}
+
+----
+== Get Vroom!
+
+* http://search.cpan.org/dist/Vroom/
+* http://github.com/ingydotnet/vroom-pm/
+
+----
+== Vroom as HTML
+
+* http://ingydotnet.github.com/vroom-pm/
+
+----
+== The End
+...
 }
 
 =encoding utf8
@@ -554,13 +676,14 @@ Vroom::Vroom - Slide Shows in Vim
 
     > mkdir MySlides    # Make a Directory for Your Slides
     > cd MySlides       # Go In There
-    > vim slides.vroom  # Write Some Slides
+    > vroom -new        # Create Example Slides File
+    > vim slides.vroom  # Edit the File and Add Your Own Slides
     > vroom --vroom     # Show Your Slides
-    > vroom --html      # Publis Your Slides as HTML
+    > vroom --html      # Publish Your Slides as HTML
 
 =head1 DESCRIPTION
 
-Ever given a Slide Show and needed to switch over to the shell?
+Ever given a Slide Show and needed to switch over to Vim?
 
 Now you don't ever have to switch again. You're already there.
 
@@ -569,10 +692,11 @@ style, much like Spork and Sporx do. The difference is that your slides
 don't compile to HTML or JavaScript or XUL. They get turned into a set
 of files that begin with '0', like '03' or '07c' or '05b.pl'.
 
-The slides are named in alpha order. That means you can bring them all
-into a Vim session with the command: C<vim 0*>. C<vroom --vroom> does
-exactly that.
+The slides are named in alphabetic order. That means you can bring them
+all into a Vim session with the command: C<vim 0*>. C<vroom --vroom>
+does exactly that.
 
+You can do things like advance to the next slide with the spacebar.
 Vroom creates a file called C<./.vimrc> with helpful key mappings for
 navigating a slideshow. See L<KEY MAPPINGS> below.
 
@@ -592,17 +716,43 @@ Vroom has a few command line options:
 
 =over
 
-=item vroom
+=item vroom --new
 
-Just running vroom will compiles 'slides.vroom' into slide files.
+Write an example C<slides.vroom> file. This example contains all the
+config options and also examples of all the Vroom syntax features.
 
 =item vroom --vroom
 
-Compile and start vim show.
+Compile (create) the slides files from the input file and start vim
+show.
+
+=item vroom --compile
+
+Just compile the slides.
+
+=item vroom --html
+
+Publish the slides to HTML, with embedded JavaScript to navigate with
+the spacebar and backspace keys. Created in the C<html/> subdirectory.
 
 =item vroom --clean
 
-Clean up all the compiled  output files.
+Clean up all the compiled output files.
+
+=item vroom <action> --skip=#
+
+The skip option takes a number as its input and skips that number of
+files during compilation. This is useful when you are polishing your slides
+and are finished with the first 50. You can say:
+
+    vroom --vroom --skip=50
+
+and it will start on slide #51.
+
+=item vroom <action> --input=<file_name>
+
+This option lets you specify an alternate input file name, instead of the
+default one, C<slides.vroom>.
 
 =back
 
@@ -645,17 +795,23 @@ Each slide can have one or more configuration options. Options are
 a comma separated list that follow the '----' header for a slide.
 Like this:
 
-    ---- center
-    ---- html
-    ---- perl,i20
     ---- config
+    ---- center
+    ---- perl,i20
+    ---- include file-name
+    ---- replace
     ---- skip
 
 =over
 
-=item skip
+=item config
 
-Ignore the following slide completely.
+The slide is really a yaml configuration. It will not be displayed
+in the presentation, but will tell vroom what to do from that point
+forward.
+
+Usually, a C<config> slide is the first thing in your input file, but
+you can use more than one config slide.
 
 =item center
 
@@ -673,48 +829,73 @@ characters from the contents of the slide.  This can be useful if you need
 to have characters special to Vroom::Vroom at the beginning of your lines,
 for example if the contents of your slide is unified diff output.
 
-=item perl,ruby,python,js,yaml,make,html,shell,diff
+=item perl,ruby,python,php,javascript,haskell,actionscript,html,yaml,xml,json,make,shell,diff
 
 Specifies that the slide is one of those syntaxen, and that the
 appropriate file extension will be used, thus causing vim to syntax
 highlight the slide.
 
-=item config
+=item include file-path-name
 
-The slide is really a yaml configuration. It will not be displayed
-in the presentation, but will tell vroom what to do from that point
-forward. You can use more than one config slide in your
-C<slides.vroom> file.
+Replace the line with the contents of the specified file. Useful to
+include long files that would make your slides file unruly.
+
+=item replace
+
+With the C<replace> option, the '+' animations in the slide cause the
+content to replace the previous partial slide, rather than append to it.
+
+=item skip
+
+Ignore the following slide completely.
 
 =back
 
-You can specify the following confguration options in a config slide:
+=head2 CONFIG SLIDE OPTIONS
+
+You can specify the following configuration options in a config slide:
 
 =over
 
-=item title <text>
+=item title: <text>
 
 The title of your presentation.
 
-=item height <number>
+=item height: <number>
 
 The number of lines in the terminal you plan to use when presenting the
 show. Used for centering the content.
 
-=item width <number>
+=item width: <number>
 
 The number of columns in the terminal you plan to use when presenting
 the show. Used for centering the content.
 
-=item list_indent <number>
+=item indent: <number>
+
+All slides will be indented by this number of spaces by default.
+
+=item list_indent: <number>
 
 Auto detect slides that have lists in them, and indent them by the
 specified number of columns.
 
-=item vim <name>
+=item vim: <name>
 
 You can specify the name of the vim executable to use. If you set this to
 C<gvim> special gvim support will be provided.
+
+=item GVim options
+
+The following options are available, if your vim option is set to gvim.
+
+    fuopt: maxhorz,maxvert
+    guioptions: egmLtT
+    guicursor: a:blinkon0-ver25-Cursor
+    guifont: Bitstream_Vera_Sans_Mono:h18
+
+These are all documented by gvim's help system. Please see that for more
+information.
 
 =back
 
@@ -732,14 +913,38 @@ Advance one slide.
 
 Go back one slide.
 
-=item <R>
+=item ??
 
-Run current slide as Perl.
-Turn a YAML slide into Data::Dumper Perl.
+Bring up the help screen.
 
-=item <Q>
+=item RR (or R -- deprecated)
+
+If the current slide is declared Perl, Python, Ruby, PHP, Haskell or
+JavaScript, then run it accordingly.
+
+=item QQ
 
 Quit Vroom.
+
+=item VV
+
+Since these vim options apply while editing the C<slides.vroom> file
+(yes, beware), you can use this shortcut to launch Vroom on the current
+contents whilst writing your slides.
+
+=item EE
+
+Edit the file that the cursor is on the filename of.
+
+You can put file path names in your slides, and then easily bring them
+up during your presentation.
+
+=item OO
+
+On a Mac, run the OS X C<open> command on the argument that your cursor is on.
+
+For instance, if you want to display an image, you could put the file
+path of the image in your slide, then use OO to launch it.
 
 =back
 
@@ -755,16 +960,6 @@ presentations.
 You can also create a file called C<.vroom/gvimrc> for gvim overrides,
 if you are using gvim.
 
-=head1 NOTE
-
-Vroom is called Vroom but the module is Vroom::Vroom because the
-CPAN shell sometimes thinks Vroom is Tim Vroom, and it refuses to
-install him.
-
-Use a shell command like this to install Vroom:
-
-    sudo cpan Vroom::Vroom
-
 =head1 USING MacVim OR gvim
 
 If you have a Mac, you really should try using MacVim for Vroom slide
@@ -778,6 +973,52 @@ To do this, set the vim option in your config section:
 NOTE: On my Mac, I have gvim symlinked to mvim, which is a smart startup
       script that ships with MacVim. Ping me, if you have questions
       about this setup.
+
+=head1 GITHUB
+
+I(ngy) put all my public talks on github. I think it is an excellent way
+to publish your slides and give people a url to review them. Here are
+the things I do to make this work well:
+
+1) I create a repository for every presentation I give. The name of
+   the repo is of the form <topic>-<event/time>-talk. You can go to
+   L<http://github.com/ingydotnet/> and look for the repos ending
+   with '-talk'.
+
+2) GitHub has a feature called gh-pages that you can use to create a
+   website for each github repo. I use this feature to publish the html
+   output of my talk. I do something like this:
+
+    vroom --html
+    mv html /tmp
+    git branch gh-pages
+    git checkout gh-pages
+    rm -r *
+    mv /tmp/html/* .
+    rmdir /tmp/html
+    git add .
+    git commit -m 'Publish my slides'
+    git push
+    git checkout master
+
+3) If my repo is called C<vroom-yapcna2009-talk>, then after I publish
+   the talk to the gh-pages branch, it will be available as
+   L<http://ingydotnet.github.com/vroom-yapcna2009-talk>.
+   I then link this url from
+   L<http://github.com/ingydotnet/vroom-yapcna2009-talk> as the Homepage.
+
+You can see an example of a talk published to HTML and posted via gh-pages
+at L<http://ingydotnet.github.com/vroom-pm/>.
+
+=head1 NOTE
+
+Vroom is called Vroom, but the module is Vroom::Vroom because the
+CPAN shell sometimes thinks Vroom is Tim Vroom, and it refuses to
+install him.
+
+Use a shell command like this to install Vroom:
+
+    sudo cpan Vroom::Vroom
 
 =head1 AUTHOR
 
