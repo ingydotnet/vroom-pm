@@ -6,4 +6,3 @@ x Support `---- skip=5`
 + Make sure initial comments are stripped
 + Put gh-pages and github support info in docs
 - vroom --gh-publish
-- Contact jlavallee about updates and gh-pages
