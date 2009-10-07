@@ -1,4 +1,9 @@
 ---
+version: 0.18
+date:    Wed Oct  7 06:27:24 PDT 2009
+changes:
+- Add --ghpublish option for pushing out a gh-pages branch to github.
+---
 version: 0.17
 date:    Mon Oct  5 02:48:33 PDT 2009
 changes:

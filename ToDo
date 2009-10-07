@@ -5,4 +5,4 @@ x Support `---- skip=5`
 + Refactor the file extension list
 + Make sure initial comments are stripped
 + Put gh-pages and github support info in docs
-- vroom --gh-publish
++ vroom --ghpublish

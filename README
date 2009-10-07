@@ -59,6 +59,15 @@ COMMAND USAGE
     vroom --clean
         Clean up all the compiled output files.
 
+    vroom --ghpublish
+        Creates a shell script in the current directory, that is intended to
+        publish your slides to the special GitHub branch called gh-pages.
+        See "GITHUB NOTES" below.
+
+        This command does NOT run the script. It merely creates it for you.
+        It is up to you to review the script and run it (if it makes sense
+        on your system).
+
     vroom <action> --skip=#
         The skip option takes a number as its input and skips that number of
         files during compilation. This is useful when you are polishing your
@@ -248,7 +257,7 @@ USING MacVim OR gvim
     script that ships with MacVim. Ping me, if you have questions about this
     setup.
 
-GITHUB
+GITHUB NOTES
     I(ngy) put all my public talks on github. I think it is an excellent way
     to publish your slides and give people a url to review them. Here are
     the things I do to make this work well:
@@ -256,7 +265,7 @@ GITHUB
     1) I create a repository for every presentation I give. The name of the
     repo is of the form <topic>-<event/time>-talk. You can go to
     <http://github.com/ingydotnet/> and look for the repos ending with
-    '-talk'.
+    "-talk".
 
     2) GitHub has a feature called gh-pages that you can use to create a
     website for each github repo. I use this feature to publish the html
@@ -266,19 +275,26 @@ GITHUB
         mv html /tmp
         git branch gh-pages
         git checkout gh-pages
-        rm -r *
+        rm -r *.html
         mv /tmp/html/* .
         rmdir /tmp/html
         git add .
         git commit -m 'Publish my slides'
-        git push
+        git push origin gh-pages
         git checkout master
+
+    2B) Vroom comes with a "--ghpublish" option. If you run:
+
+        > vroom -ghpublish
+
+    it will generate a script called "ghpublish" that contains commands like
+    the ones above, to publish your slides to a gh-pages branch.
 
     3) If my repo is called "vroom-yapcna2009-talk", then after I publish
     the talk to the gh-pages branch, it will be available as
     <http://ingydotnet.github.com/vroom-yapcna2009-talk>. I then link this
     url from <http://github.com/ingydotnet/vroom-yapcna2009-talk> as the
-    Homepage.
+    Homepage url.
 
     You can see an example of a talk published to HTML and posted via
     gh-pages at <http://ingydotnet.github.com/vroom-pm/>.

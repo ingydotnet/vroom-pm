@@ -3,7 +3,7 @@ use 5.006001;
 use strict;
 use warnings;
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 
 use IO::All;
 use YAML::XS;
@@ -22,6 +22,7 @@ field compile => 0;
 field sample => 0;
 field run => 0;
 field html => 0;
+field ghpublish => 0;
 field start => 0;
 field digits => 0;
 field skip => 0;
@@ -84,6 +85,9 @@ sub vroom {
     elsif ($self->html) {
         $self->makeHTML;
     }
+    elsif ($self->ghpublish) {
+        $self->makePublisher;
+    }
     elsif ($self->help) {
         warn $self->usage;
     }
@@ -109,6 +113,7 @@ Create a new directory for your slides and run vroom from there.
         "compile" => \$self->{compile},
         "run" => \$self->{run},
         "html" => \$self->{html},
+        "ghpublish" => \$self->{ghpublish},
         "input=s"  => \$self->{input},
         "vroom"  => \$self->{start},
         "skip=i" => \$self->{skip},
@@ -673,6 +678,70 @@ for my $word (qw(Vroom totally rocks!)) {
     print "'$file' created.\n";
 }
 
+sub makePublisher {
+    my $self = shift;
+    my $input = $self->input;
+    die "Error: This doesn't look like a Vroom directory.\n"
+      unless -f $input;
+    die "Error: This doesn't look like a git repository.\n"
+      unless -d '.git';
+    die "Error: No writeable /tmp directory on this system.\n"
+      unless -d '/tmp' and -w '/tmp';
+    die "Error: There is no git branch called 'gh-pages'.\n" .
+        "Perhaps you should run `git branch gh-pages` first.\n"
+        unless `git branch` =~ /\bgh-pages\b/;
+    io('ghpublish')->print(<<'...');
+#!/bin/sh
+
+# This script is experimental. Please understand it before you run it on
+# your system. Just because it works for Ingy, doesn't mean it will work
+# for you.
+
+if [ -e "/tmp/html" ]; then
+    echo "Error: /tmp/html already exists. Perhaps remove it."
+    exit 13
+fi
+
+# Create HTML slides.
+vroom --html || exit 1
+# Move the html directory to /tmp
+mv html /tmp || exit 1
+# Stash any local stuff that isn't committed.
+git stash || exit 1
+# Switch to your gh-pages branch. (That you already created. Right?)
+git checkout gh-pages || exit 1
+# Remove all the html files from the gh-pages branch.
+rm -f *.html || exit 1
+# Move the HTML slides in here.
+mv /tmp/html/* . || exit 1
+# Remove the html directory from /tmp
+rmdir /tmp/html || exit 1
+# Add any new files to git.
+git add 0* index.html || exit 1
+# Commit your changes.
+git commit -am 'Publish my slides' || exit 1
+# Push them to GitHub.
+git push origin gh-pages || exit 1
+# Switch back to the master branch.
+git checkout master || exit 1
+# Get your uncommitted changes back.
+git stash pop || exit 1
+
+# Voilà! (hopefully)
+...
+
+    chmod 0755, 'ghpublish';
+
+    print <<'...';
+Created the shell script called 'ghpublish'.
+
+This script is somewhat experimental, so please read the code to make sure
+it makes sense on your system.
+
+If it makes sense to you, run it. (at your own risk :)
+...
+}
+
 =encoding utf8
 
 =head1 NAME
@@ -745,6 +814,15 @@ the spacebar and backspace keys. Created in the C<html/> subdirectory.
 =item vroom --clean
 
 Clean up all the compiled output files.
+
+=item vroom --ghpublish
+
+Creates a shell script in the current directory, that is intended to
+publish your slides to the special GitHub branch called gh-pages. See
+L<GITHUB NOTES> below.
+
+This command does NOT run the script. It merely creates it for you. It is up
+to you to review the script and run it (if it makes sense on your system).
 
 =item vroom <action> --skip=#
 
@@ -981,7 +1059,7 @@ NOTE: On my Mac, I have gvim symlinked to mvim, which is a smart startup
       script that ships with MacVim. Ping me, if you have questions
       about this setup.
 
-=head1 GITHUB
+=head1 GITHUB NOTES
 
 I(ngy) put all my public talks on github. I think it is an excellent way
 to publish your slides and give people a url to review them. Here are
@@ -990,7 +1068,7 @@ the things I do to make this work well:
 1) I create a repository for every presentation I give. The name of
    the repo is of the form <topic>-<event/time>-talk. You can go to
    L<http://github.com/ingydotnet/> and look for the repos ending
-   with '-talk'.
+   with C<-talk>.
 
 2) GitHub has a feature called gh-pages that you can use to create a
    website for each github repo. I use this feature to publish the html
@@ -1000,19 +1078,27 @@ the things I do to make this work well:
     mv html /tmp
     git branch gh-pages
     git checkout gh-pages
-    rm -r *
+    rm -r *.html
     mv /tmp/html/* .
     rmdir /tmp/html
     git add .
     git commit -m 'Publish my slides'
-    git push
+    git push origin gh-pages
     git checkout master
+
+2B) Vroom comes with a C<--ghpublish> option. If you run:
+
+    > vroom -ghpublish
+
+it will generate a script called C<ghpublish> that contains commands like the
+ones above, to publish your slides to a gh-pages branch.
 
 3) If my repo is called C<vroom-yapcna2009-talk>, then after I publish
    the talk to the gh-pages branch, it will be available as
    L<http://ingydotnet.github.com/vroom-yapcna2009-talk>.
    I then link this url from
-   L<http://github.com/ingydotnet/vroom-yapcna2009-talk> as the Homepage.
+   L<http://github.com/ingydotnet/vroom-yapcna2009-talk> as the Homepage
+   url.
 
 You can see an example of a talk published to HTML and posted via gh-pages
 at L<http://ingydotnet.github.com/vroom-pm/>.
