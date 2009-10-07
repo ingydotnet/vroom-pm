@@ -476,7 +476,7 @@ sub applyOptions {
     my $ext = '';
     for my $key (keys %$config) {
         if (my $e = $types->{$key}) {
-            $ext = $e;
+            $ext = ".$e";
             last;
         }
     }
@@ -664,6 +664,7 @@ for my $word (qw(Vroom totally rocks!)) {
 ----
 == The End
 ...
+    print "'$file' created.\n";
 }
 
 =encoding utf8
