@@ -2,8 +2,29 @@
 <head>
 <title>Vroom!</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>
+function navigate(e) {
+    var keynum = (window.event) // IE
+        ? e.keyCode
+        : e.which;
+    if (keynum == 13 || keynum == 32) {
+        window.location = "001.html";
+        return false;
+    }
+    return true;
+}
+</script>
+<style>
+body {
+    font-family: sans-serif;
+}
+h4 {
+    color: #888;
+}
+</style>
 </head>
 <body>
+<h4>Use SPACEBAR to peruse the slides or click one to start...<h4>
 <h1>Vroom!</h1>
 <ul>
 <li><a href="01.html">Vroom!</a></li>
