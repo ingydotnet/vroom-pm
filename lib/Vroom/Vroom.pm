@@ -534,7 +534,7 @@ map QQ :q!<CR>
 map OO :!open <cWORD><CR><CR>
 map EE :e <cWORD><CR>
 map !! G:!open <cWORD><CR><CR>
-map ?? :e .help
+map ?? :e .help<CR>
 set laststatus=2
 set statusline=$title
 
@@ -561,15 +561,21 @@ $home_gvimrc_content
 sub writeHelp {
     my $self = shift;
     io('.help')->print(<<'...');
-<SPACE>         Advance
-<BACKSPACE>     Go back
 
-??              Help
-RR              Run
-QQ              Quit Vroom.
-VV              vroom --vroom 
-EE              Edit file under cursor
-OO              Open file under cursor (Mac OS X)
+    <SPACE>         Advance
+    <BACKSPACE>     Go back
+
+    ??              Help
+    QQ              Quit Vroom
+
+    RR              Run slide as a program
+    VV              vroom --vroom 
+    EE              Edit file under cursor
+    OO              Open file under cursor (Mac OS X)
+
+
+    (Press SPACE to leave Help screen and continue)
+
 ...
 }
 
