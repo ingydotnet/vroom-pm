@@ -3,7 +3,7 @@ use 5.006001;
 use strict;
 use warnings;
 
-our $VERSION = '0.18';
+our $VERSION = '0.19';
 
 use IO::All;
 use YAML::XS;
@@ -33,11 +33,8 @@ field config => {
     list_indent => 10,
     skip => 0,
     vim => 'vim',
-    # gvim options
-    fuopt => 'maxhorz,maxvert',
-    guioptions => 'egmLtT',
-    guicursor => 'a:blinkon0-ver25-Cursor',
-    guifont => 'Bitstream_Vera_Sans_Mono:h18',
+    vimrc => '',
+    gvimrc => '',
 };
 
 sub new {
@@ -413,6 +410,7 @@ sub formatNumber {
 }
 
 my $types = {
+    # add pl6 and py3
     perl => 'pl', pl => 'pl',
     ruby => 'rb', rb => 'rb',
     python => 'py', py => 'py',
@@ -545,6 +543,9 @@ set statusline=$title
 
 " Overrides from $home_vimrc
 $home_vimrc_content
+
+" Values from slides.vroom config section. (under 'vimrc')
+${\ $self->config->{vimrc}}
 ...
 
     if ($self->config->{vim} =~ /\bgvim\b/) {
@@ -552,10 +553,8 @@ $home_vimrc_content
         my $home_gvimrc_content = -e $home_gvimrc ? io($home_gvimrc)->all : ''; 
 
         io(".gvimrc")->print(<<"...");
-set fuopt=${\ $self->config->{fuopt}}
-set guioptions=${\ $self->config->{guioptions}}
-set guifont=${\ $self->config->{guifont}}
-set guicursor=${\ $self->config->{guicursor}}
+" Values from slides.vroom config section. (under 'gvimrc')
+${\ $self->config->{gvimrc}}
 
 " Overrides from $home_gvimrc
 $home_gvimrc_content
@@ -617,10 +616,12 @@ skip: 0
 
 # The following options are for Gvim usage.
 # vim: gvim
-# fuopt: maxhorz,maxvert
-# guioptions: egmLtT
-# guicursor: a:blinkon0-ver25-Cursor
-# guifont: Bitstream_Vera_Sans_Mono:h18
+# gvimrc: |
+#   set fuopt=maxhorz,maxvert
+#   set guioptions=egmLtT
+#   set guifont=Bitstream_Vera_Sans_Mono:h18
+#   set guicursor=a:blinkon0-ver25-Cursor
+#   colorscheme default
 
 ---- center
 Vroom!

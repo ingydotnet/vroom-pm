@@ -1,4 +1,9 @@
 ---
+version: 0.19
+date:    Thu Apr  8 09:58:43 PDT 2010
+changes:
+- Make .g?vimrc easier to config
+---
 version: 0.18
 date:    Wed Oct  7 06:27:24 PDT 2009
 changes:
