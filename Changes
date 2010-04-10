@@ -1,4 +1,9 @@
 ---
+version: 0.20
+date:    Thu Apr  8 16:22:55 PDT 2010
+changes:
+- 0.19 botched getting to CPAN
+---
 version: 0.19
 date:    Thu Apr  8 09:58:43 PDT 2010
 changes:

@@ -3,7 +3,7 @@ use 5.006001;
 use strict;
 use warnings;
 
-our $VERSION = '0.19';
+our $VERSION = '0.20';
 
 use IO::All;
 use YAML::XS;
