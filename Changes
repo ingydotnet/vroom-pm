@@ -1,4 +1,9 @@
 ---
+version: 0.22
+date:    Mon Jun  7 19:23:39 PDT 2010
+changes:
+- Move Vroom::Vroom back to Vroom.pm
+---
 version: 0.21
 date:    Sat Apr 10 11:02:45 PDT 2010
 changes:
