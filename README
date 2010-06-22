@@ -1,5 +1,5 @@
 NAME
-    Vroom::Vroom - Slide Shows in Vim
+    Vroom - Slide Shows in Vim
 
 SYNOPSIS
         > mkdir MySlides    # Make a Directory for Your Slides
@@ -56,6 +56,10 @@ COMMAND USAGE
         with the spacebar and backspace keys. Created in the "html/"
         subdirectory.
 
+    vroom --text
+        Publish the slides to plain text. This action uses all the text
+        slides in their unsplit form. Created in the "text/" subdirectory.
+
     vroom --clean
         Clean up all the compiled output files.
 
@@ -102,7 +106,7 @@ INPUT FORMAT
         +* Baz
         ---- perl,i10
         # Perl code indented 10 spaces
-        use Vroom::Vroom;
+        use Vroom;
 
         print "Hello World";
         ---- center
@@ -142,7 +146,7 @@ CONFIGURATION OPTIONS
     i-##
         'i' followed by a negative number means to strip that number of
         leading characters from the contents of the slide. This can be
-        useful if you need to have characters special to Vroom::Vroom at the
+        useful if you need to have characters special to Vroom at the
         beginning of your lines, for example if the contents of your slide
         is unified diff output.
 
@@ -298,15 +302,6 @@ GITHUB NOTES
 
     You can see an example of a talk published to HTML and posted via
     gh-pages at <http://ingydotnet.github.com/vroom-pm/>.
-
-NOTE
-    Vroom is called Vroom, but the module is Vroom::Vroom because the CPAN
-    shell sometimes thinks Vroom is Tim Vroom, and it refuses to install
-    him.
-
-    Use a shell command like this to install Vroom:
-
-        sudo cpan Vroom::Vroom
 
 AUTHOR
     Ingy döt Net <ingy@cpan.org>

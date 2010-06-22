@@ -22,6 +22,7 @@ field compile => 0;
 field sample => 0;
 field run => 0;
 field html => 0;
+field text => 0;
 field ghpublish => 0;
 field start => 0;
 field digits => 0;
@@ -49,6 +50,7 @@ sub usage {
     -vroom      - Start slideshow
     -compile    - Generate slides
     -html       - Publish slides as HTML
+    -text       - Publish slides as plain text
 
     -skip=#     - Skip # of slides
     -input=name - Specify an input file name
@@ -82,6 +84,9 @@ sub vroom {
     elsif ($self->html) {
         $self->makeHTML;
     }
+    elsif ($self->text) {
+        $self->makeText;
+    }
     elsif ($self->ghpublish) {
         $self->makePublisher;
     }
@@ -110,6 +115,7 @@ Create a new directory for your slides and run vroom from there.
         "compile" => \$self->{compile},
         "run" => \$self->{run},
         "html" => \$self->{html},
+        "text" => \$self->{text},
         "ghpublish" => \$self->{ghpublish},
         "input=s"  => \$self->{input},
         "vroom"  => \$self->{start},
@@ -133,6 +139,7 @@ sub cleanAll {
     my $self = shift;
     $self->cleanUp;
     io->dir('html')->rmtree;
+    io->dir('text')->rmtree;
 }
 
 sub runSlide {
@@ -185,6 +192,25 @@ sub makeSlides {
     $self->buildSlides;
     $self->writeVimrc;
     $self->writeHelp;
+}
+
+sub makeText {
+    my $self = shift;
+    $self->cleanAll;
+    $self->makeSlides;
+    io('text')->mkdir;
+    my @slides = glob('0*');
+    for my $slide (@slides) {
+        next unless $slide =~ /^(\d+)(\.\S+)?$/;
+        my $num = $1;
+        my $ext = $2 || '';
+        my $text = io(-e "${num}z$ext" ? "${num}z$ext" : "$num$ext")->all();
+        io("text/$slide")->print($text);
+    }
+    eval {
+        system("cp .vimrc text");
+    };
+    $self->cleanUp;
 }
 
 sub makeHTML {
@@ -819,6 +845,11 @@ Just compile the slides.
 
 Publish the slides to HTML, with embedded JavaScript to navigate with
 the spacebar and backspace keys. Created in the C<html/> subdirectory.
+
+=item vroom --text
+
+Publish the slides to plain text. This action uses all the text slides in
+their unsplit form.  Created in the C<text/> subdirectory.
 
 =item vroom --clean
 

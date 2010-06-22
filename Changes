@@ -1,4 +1,9 @@
 ---
+version: 0.23
+date:    Tue Jun 22 14:55:10 PDT 2010
+changes:
+- Add 'vroom -text' to publish text.
+---
 version: 0.22
 date:    Mon Jun  7 19:23:39 PDT 2010
 changes:
