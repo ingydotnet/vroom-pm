@@ -3,7 +3,7 @@ use 5.006001;
 use strict;
 use warnings;
 
-our $VERSION = '0.22';
+our $VERSION = '0.23';
 
 use IO::All;
 use YAML::XS;
@@ -411,7 +411,7 @@ sub formatNumber {
 
 my $types = {
     # add pl6 and py3
-    perl => 'pl', pl => 'pl',
+    perl => 'pl', pl => 'pl', pm => 'pm',
     ruby => 'rb', rb => 'rb',
     python => 'py', py => 'py',
     haskell => 'hs', hs => 'hs',
@@ -434,6 +434,8 @@ sub parseSlideConfig {
     my $config = {};
     my $type_list = join '|', keys %$types;
     for my $option (split /\s*,\s*/, $string) {
+        $config->{$option} = 1
+            if $option =~ /^cd/;
         $config->{$1} = 1
             if $option =~ /^(config|skip|center|replace|$type_list)$/;
         $config->{indent} = $1
@@ -481,6 +483,12 @@ sub applyOptions {
         if (my $e = $types->{$key}) {
             $ext = ".$e";
             last;
+        }
+        elsif ($key =~ s/^cd//) {
+            if (my $e = $types->{$key}) {
+                $ext = ".cd.$e";
+                last;
+            }
         }
     }
     $self->ext($ext);
