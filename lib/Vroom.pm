@@ -1,33 +1,31 @@
 package Vroom;
 use 5.006001;
-use strict;
-use warnings;
+use Vroom::OO -base;
 
-our $VERSION = '0.23';
+our $VERSION = '0.25';
 
 use IO::All;
 use YAML::XS;
-use Class::Field 'field';
 use Getopt::Long;
 use File::HomeDir;
 use Cwd;
 use Carp;
 
-field input => 'slides.vroom';
-field stream => '';
-field ext => '';
-field help => 0;
-field clean => 0;
-field compile => 0;
-field sample => 0;
-field run => 0;
-field html => 0;
-field text => 0;
-field ghpublish => 0;
-field start => 0;
-field digits => 0;
-field skip => 0;
-field config => {
+has input => 'slides.vroom';
+has stream => '';
+has ext => '';
+has help => 0;
+has clean => 0;
+has compile => 0;
+has sample => 0;
+has run => 0;
+has html => 0;
+has text => 0;
+has ghpublish => 0;
+has start => 0;
+has digits => 0;
+has skip => 0;
+has config => {
     title => 'Untitled Presentation',
     height => 24,
     width => 80,
@@ -37,10 +35,6 @@ field config => {
     vimrc => '',
     gvimrc => '',
 };
-
-sub new {
-    return bless {}, shift;
-}
 
 sub usage {
     return <<'...';

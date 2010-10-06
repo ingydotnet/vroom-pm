@@ -1,4 +1,10 @@
 ---
+version: 0.25
+date:    Tue Oct  5 22:18:50 PDT 2010
+changes:
+- Use Gloom
+- Add M:I Makefile.PL stuffs.
+---
 version: 0.23
 date:    Tue Jun 22 14:55:10 PDT 2010
 changes:
