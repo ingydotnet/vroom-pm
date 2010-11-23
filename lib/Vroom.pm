@@ -2,7 +2,7 @@ package Vroom;
 use 5.006001;
 use Vroom::OO -base;
 
-our $VERSION = '0.25';
+our $VERSION = '0.26';
 
 use IO::All;
 use YAML::XS;
@@ -34,6 +34,7 @@ has config => {
     vim => 'vim',
     vimrc => '',
     gvimrc => '',
+    script => '',
 };
 
 sub usage {
@@ -127,6 +128,8 @@ sub cleanUp {
     unlink('.vimrc');
     unlink('.gvimrc');
     unlink('run.slide');
+    io->dir('bin')->rmtree;
+    io->dir('done')->rmtree;
 }
 
 sub cleanAll {
@@ -185,6 +188,7 @@ sub makeSlides {
     $self->getInput;
     $self->buildSlides;
     $self->writeVimrc;
+    $self->writeScriptRunner;
     $self->writeHelp;
 }
 
@@ -385,13 +389,19 @@ sub buildSlides {
         $raw_slide = $self->padVertical($raw_slide);
 
         my @slides;
+        my @scripts;
         my $slide = '';
-        for (split /^\+/m, $raw_slide) {
+        for my $part (split /^\+/m, $raw_slide) {
             $slide = '' if $config->{replace};
-            $slide .= $_;
+            my $script = '';
+            if ($self->config->{script}) {
+                ($part, $script) = $self->parseScript($part);
+            }
+            $slide .= $part;
             $slide = $self->padVertical($slide)
                 if $config->{replace};
             push @slides, $slide;
+            push @scripts, $script;
         }
 
         my $base_name = $self->formatNumber($number);
@@ -417,9 +427,26 @@ sub buildSlides {
                 : $i == @slides
                     ? 'z'
                     : $suf;
-            io("$base_name$suf" . $self->ext)->print($slide);
+            my $file_name = "$base_name$suf" . $self->ext;
+            io($file_name)->print($slide);
+            if (my $script = shift @scripts) {
+                io("bin/$file_name")->assert->print($script);
+            }
         }
     }
+}
+
+sub parseScript {
+    my $self = shift;
+    my $text = shift;
+    chomp $text;
+    $text .= "\n";
+    my $script = '';
+    my $delim = $self->config->{script};
+    while ($text =~ s/^[\ \t]*\Q$delim\E(.*\n)//m) {
+        $script .= $1;
+    }
+    return ($text, $script);
 }
 
 sub formatNumber {
@@ -543,6 +570,30 @@ sub writeVimrc {
     my $home_vimrc = File::HomeDir->my_home . "/.vroom/vimrc";
     my $home_vimrc_content = -e $home_vimrc ? io($home_vimrc)->all : ''; 
 
+    my $next_cmd = $self->config->{script}
+        ? ':n<CR>:<CR>:call RunIf()<CR>:<CR>gg'
+        : ':n<CR>:<CR>gg';
+    my $script_functions = $self->config->{script} ? <<'...' : '';
+function RunIf()
+    let script = "bin/" . expand("%")
+    let done = "done/" . expand("%")
+    if filereadable(done)
+        return
+    endif
+    if filereadable(script)
+        call system("sh " . script)
+        call system("touch " . done)
+    endif
+    return
+endfunction
+
+function RunNow()
+    let done = "done/" . expand("%")
+    call system("rm -f " . done)
+    call RunIf()
+endfunction
+...
+
     die <<'...'
 The .vimrc in your current directory does not look like vroom created it.
 
@@ -556,10 +607,12 @@ time, and rerun vroom. You should not get this message again.
     $title =~ s/\s/\\ /g;
     io(".vimrc")->print(<<"...");
 " This .vimrc file was created by Vroom-$VERSION
-map <SPACE> :n<CR>:<CR>gg
+$script_functions
+map <SPACE> $next_cmd
 map <BACKSPACE> :N<CR>:<CR>gg
 map R :!vroom -run %<CR>
 map RR :!vroom -run %<CR>
+map AA :call RunNow()<CR>:<CR>
 map VV :!vroom -vroom<CR>
 map QQ :q!<CR>
 map OO :!open <cWORD><CR><CR>
@@ -588,6 +641,12 @@ ${\ $self->config->{gvimrc}}
 $home_gvimrc_content
 ...
     }
+}
+
+sub writeScriptRunner {
+    my $self = shift;
+    return unless $self->config->{script};
+    mkdir 'done';
 }
 
 sub writeHelp {

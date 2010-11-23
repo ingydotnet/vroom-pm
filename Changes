@@ -1,4 +1,10 @@
 ---
+version: 0.26
+date:    Tue Nov 23 15:16:42 EST 2010
+changes:
+- Add inline script support for running external programs
+  for things like images and browser.
+---
 version: 0.25
 date:    Tue Oct  5 22:18:50 PDT 2010
 changes:
