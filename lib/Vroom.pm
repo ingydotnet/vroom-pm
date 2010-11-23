@@ -511,6 +511,7 @@ sub applyOptions {
         return '';
     }
 
+    $slide ||= '';
     if ($config->{center}) {
         $slide =~ s{^(\+?)\ *(.*?)\ *$}
                    {$1 . ' ' x (($self->config->{width} - length($2)) / 2) . $2}gem;
