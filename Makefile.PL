@@ -1,6 +1,5 @@
 use inc::Module::Install;
 
-name        'Vroom';
 all_from    'lib/Vroom.pm';
 readme_from;
 manifest_skip;
