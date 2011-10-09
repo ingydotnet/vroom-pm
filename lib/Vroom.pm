@@ -10,6 +10,7 @@ use Getopt::Long;
 use File::HomeDir;
 use Cwd;
 use Carp;
+use Term::Size;
 
 has input => 'slides.vroom';
 has stream => '';
@@ -35,6 +36,7 @@ has config => {
     vimrc => '',
     gvimrc => '',
     script => '',
+    auto_size => 0,
 };
 
 sub usage {
@@ -507,6 +509,14 @@ sub applyOptions {
             %{$self->config},
             %{(YAML::XS::Load($slide))},
         };
+
+        if ($config->{auto_size}) {
+            my ($columns, $rows) = Term::Size::chars *STDOUT{IO};
+
+            $config->{width}  = $columns;
+            $config->{height} = $rows;
+        }
+
         $self->config($config);
         return '';
     }
@@ -700,6 +710,7 @@ title: Vroom!
 indent: 5
 height: 18
 width: 69
+#auto_size: 1
 skip: 0
 
 # The following options are for Gvim usage.
@@ -945,6 +956,7 @@ Here is an example slides.vroom file:
     height: 84
     width: 20
     # skip: 12      # Skip 12 slides. Useful when making slides.
+    # auto_size: 1  # Determines height/width automatically
     ---- center
     My Presentation
 
@@ -1049,6 +1061,11 @@ show. Used for centering the content.
 
 The number of columns in the terminal you plan to use when presenting
 the show. Used for centering the content.
+
+=item auto_size: <0|1>
+
+When set to 1, the height/width options above will be ignored and
+determined each time you start the slideshow.
 
 =item indent: <number>
 
