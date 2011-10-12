@@ -10,6 +10,7 @@ requires 'IO::All';
 requires 'YAML::XS';
 requires 'File::HomeDir';
 requires 'Template::Toolkit::Simple';
+requires 'Term::Size';
 
 use_gloom 'Vroom::OO';
 
