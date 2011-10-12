@@ -1,43 +1,56 @@
-package Vroom;
+##
+# name:      Vroom
+# abstract:  Slide Shows in Vim
+# author:    Ingy döt Net <ingy@ingy.net>
+# license:   perl
+# copyright: 2008, 2009, 2010, 2011
+
 use 5.006001;
-use Vroom::OO -base;
+package Vroom;
+use Vroom::Mo;
 
 our $VERSION = '0.26';
 
-use IO::All;
-use YAML::XS;
+use File::HomeDir 0.97;
+use IO::All 0.44;
+use Template::Toolkit::Simple 0.13;
+use Term::Size 0.2;
+use YAML::XS 0.37;
+
 use Getopt::Long;
-use File::HomeDir;
 use Cwd;
 use Carp;
-use Term::Size;
 
-has input => 'slides.vroom';
-has stream => '';
-has ext => '';
-has help => 0;
-has clean => 0;
-has compile => 0;
-has sample => 0;
-has run => 0;
-has html => 0;
-has text => 0;
-has ghpublish => 0;
-has start => 0;
-has digits => 0;
-has skip => 0;
-has config => {
-    title => 'Untitled Presentation',
-    height => 24,
-    width => 80,
-    list_indent => 10,
-    skip => 0,
-    vim => 'vim',
-    vimrc => '',
-    gvimrc => '',
-    script => '',
-    auto_size => 0,
-};
+has input => (default => sub {'slides.vroom'});
+has stream => (default => sub {''});
+has ext => (default => sub {''});
+has help => (default => sub{0});
+has clean => (default => sub{0});
+has compile => (default => sub{0});
+has sample => (default => sub{0});
+has run => (default => sub{0});
+has html => (default => sub{0});
+has text => (default => sub{0});
+has ghpublish => (default => sub{0});
+has start => (default => sub{0});
+has digits => (default => sub{0});
+has skip => (default => sub{0});
+has config => (
+    default => sub {
+        +{
+            title => 'Untitled Presentation',
+            height => 24,
+            width => 80,
+            list_indent => 10,
+            skip => 0,
+            vim => 'vim',
+            vimrc => '',
+            gvimrc => '',
+            script => '',
+            auto_size => 0,
+        };
+    }
+);
 
 sub usage {
     return <<'...';
@@ -215,7 +228,6 @@ sub makeText {
 
 sub makeHTML {
     my $self = shift;
-    require Template::Toolkit::Simple;
     $self->cleanAll;
     $self->makeSlides;
     io('html')->mkdir;
@@ -842,12 +854,6 @@ If it makes sense to you, run it. (at your own risk :)
 ...
 }
 
-=encoding utf8
-
-=head1 NAME
-
-Vroom - Slide Shows in Vim
-
 =head1 SYNOPSIS
 
     > mkdir MySlides    # Make a Directory for Your Slides
@@ -1213,18 +1219,3 @@ ones above, to publish your slides to a gh-pages branch.
 
 You can see an example of a talk published to HTML and posted via gh-pages
 at L<http://ingydotnet.github.com/vroom-pm/>.
-
-=head1 AUTHOR
-
-Ingy döt Net <ingy@cpan.org>
-
-=head1 COPYRIGHT
-
-Copyright (c) 2008, 2009. Ingy döt Net.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
-
-See http://www.perl.com/perl/misc/Artistic.html
-
-=cut
