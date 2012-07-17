@@ -182,6 +182,9 @@ sub runSlide {
     elsif ($slide =~ /\.yaml$/) {
         exec "clear; $^X -MYAML::XS -MData::Dumper -e '\$Data::Dumper::Terse = 1; \$Data::Dumper::Indent = 1; print Dumper YAML::XS::LoadFile(shift)' run.slide";
     }
+    elsif ($slide =~ /\.sh$/) {
+        exec "clear; $ENV{SHELL} -i run.slide";
+    }
 }
 
 sub trim_slide {
