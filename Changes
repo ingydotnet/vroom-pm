@@ -1,4 +1,9 @@
 ---
+version: 0.27
+date:    Tue Jul 17 09:43:41 PDT 2012
+changes:
+- Support for running shell slides -- mikegrb++
+---
 version: 0.26
 date:    Tue Oct 11 21:47:43 EDT 2011
 changes:
