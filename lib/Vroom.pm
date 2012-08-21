@@ -189,7 +189,7 @@ sub runSlide {
         # get current working directory - the input filename must be absolute to satisfy CFEngine's security model
         use Cwd 'abs_path';
         my $abs_path = abs_path("run.slide");
-        exec "clear; /var/cfengine/bin/cf-agent -KI -b example -f $abs_path";
+        exec "clear; cf-agent -KI -f $abs_path";
     }
 
 
