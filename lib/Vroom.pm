@@ -594,7 +594,7 @@ sub writeVimrc {
     my $self = shift;
 
     my $home_vimrc = File::HomeDir->my_home . "/.vroom/vimrc";
-    my $home_vimrc_content = -e $home_vimrc ? io($home_vimrc)->all : ''; 
+    my $home_vimrc_content = -e $home_vimrc ? io($home_vimrc)->all : '';
 
     my $next_cmd = $self->config->{script}
         ? ':n<CR>:<CR>:call RunIf()<CR>:<CR>gg'
@@ -657,7 +657,7 @@ ${\ $self->config->{vimrc}}
 
     if ($self->config->{vim} =~ /\bgvim\b/) {
         my $home_gvimrc = File::HomeDir->my_home . "/.vroom/gvimrc";
-        my $home_gvimrc_content = -e $home_gvimrc ? io($home_gvimrc)->all : ''; 
+        my $home_gvimrc_content = -e $home_gvimrc ? io($home_gvimrc)->all : '';
 
         io(".gvimrc")->print(<<"...");
 " Values from slides.vroom config section. (under 'gvimrc')
@@ -686,7 +686,7 @@ sub writeHelp {
     QQ              Quit Vroom
 
     RR              Run slide as a program
-    VV              vroom --vroom 
+    VV              vroom --vroom
     EE              Edit file under cursor
     OO              Open file under cursor (Mac OS X)
 
@@ -1024,7 +1024,7 @@ characters.
 
 =item i-##
 
-'i' followed by a negative number means to strip that number of leading 
+'i' followed by a negative number means to strip that number of leading
 characters from the contents of the slide.  This can be useful if you need
 to have characters special to Vroom at the beginning of your lines,
 for example if the contents of your slide is unified diff output.
