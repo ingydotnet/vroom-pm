@@ -22,6 +22,7 @@ use Cwd;
 use Carp;
 
 has input => (default => sub {'slides.vroom'});
+has notesfile => (default => sub {'notes.txt'});
 has stream => (default => sub {''});
 has ext => (default => sub {''});
 has help => (default => sub{0});
@@ -235,19 +236,20 @@ sub makeHTML {
     $self->makeSlides;
     io('html')->mkdir;
     my @slides = glob('0*');
+    my @notes = $self->parse_notesfile;
     for (my $i = 0; $i < @slides; $i++) {
         my $slide = $slides[$i];
         my $prev = ($i > 0) ? $slides[$i - 1] : '';
         my $next = ($i + 1 < @slides) ? $slides[$i + 1] : '';
         my $text = io($slide)->all;
-        my $title = $text;
         $text = Template::Toolkit::Simple->new()->render(
             $self->slideTemplate,
             {
-                title => "$slide",
+                title => $notes[$i]->{'title'},
                 prev => $prev,
                 next => $next,
                 content => $text,
+                notes => $self->htmlize_note($notes[$i]->{'text'}),
             }
         );
         io("html/$slide.html")->print($text);
@@ -351,9 +353,15 @@ function navigate(e) {
 </script>
 </head>
 <body onkeypress="return navigate(event)">
+<div style="border-style: solid ; border-width: 2px ; font-size: x-large">
 <pre>
 [%- content | html -%]
 </pre>
+</div>
+<br>
+<div style="font-size: small">
+<p>[% notes %]</p>
+</div>
 </body>
 ...
 }
@@ -387,10 +395,13 @@ sub buildSlides {
 
     my $number = 0;
 
+    '' > io($self->notesfile);                                          # start with a blank file so we can append
     for my $raw_slide (@raw_slides) {
         my $config = $self->parseSlideConfig(shift @raw_configs);
 
         next if $config->{skip};
+
+        my ($title, $notes) = $self->extract_notes($raw_slide);
 
         $raw_slide = $self->applyOptions($raw_slide, $config)
             or next;
@@ -402,6 +413,8 @@ sub buildSlides {
             $self->{skip}-- if $self->{skip};
             next;
         }
+
+        $self->print_notes($title, $number, $notes);
 
         $raw_slide = $self->padVertical($raw_slide);
 
@@ -451,6 +464,94 @@ sub buildSlides {
             }
         }
     }
+}
+
+my $NEXT_SLIDE = '<Space>';
+
+sub extract_notes {
+    my $self = shift;
+    # have to deal with the slide argument in $_[0] directly so we can modify it
+    my $title = $_[0] =~ s/^%\s*(.*?)\n//m ? $1 : '';
+    my $notes = $_[0] =~ s/^\*{3}\n(.*)\s*\Z//ms ? $1 : '';
+
+    $notes =~ s/^\+/$NEXT_SLIDE\n/mg;
+
+    return ($title, $notes);
+}
+
+sub print_notes {
+    my $self = shift;
+    my ($title, $number, $notes) = @_;
+    $title ||= "Slide $number";
+
+    "\n" . ($number == 1 ? ' ' x length($NEXT_SLIDE) : $NEXT_SLIDE) . "    -- $title --\n\n$notes\n" >> io($self->notesfile);
+}
+
+sub parse_notesfile
+{
+    my $self = shift;
+
+    my $notes = io($self->notesfile)->slurp;
+    unless ($notes)
+    {
+        warn("no notes file found");
+        return ();
+    }
+
+    # first slide doesn't have a marker, so we'll add one, for consistency
+    $notes = $NEXT_SLIDE . $notes;
+
+    my @notes;
+    my @stream = split(/\Q$NEXT_SLIDE\E(?:\s+-- (.*?) --)?\s*/, $notes);
+    # skipping 0 because, since we're starting with what we're splitting on, the first field will
+    # always be empty
+    for (1..$#stream)
+    {
+        if ($_ % 2)
+        {
+            my $title = $stream[$_];
+            $title = $notes[-1]->{'title'} unless defined $title;
+            push @notes, { title => $title };
+        }
+        else
+        {
+            my $text = $stream[$_];
+            $text =~ s/\s+\Z//;
+            $notes[-1]->{'text'} = $stream[$_];
+        }
+    }
+
+    return @notes;
+}
+
+my %inline_tags; BEGIN { %inline_tags = ( BQ => 'code', IT => 'i', BO => 'b', ); }
+sub inline_element { my $t = $_[1]; $t =~ s/^.//; $t =~ s/.$//; return "<$inline_tags{$_[0]}>$t</$inline_tags{$_[0]}>" }
+sub htmlize_note
+{
+     use Text::Balanced qw< extract_multiple extract_delimited >;
+
+    my $self = shift;
+    my ($note) = @_;
+    $note = '' unless defined $note;
+
+    $note =~ s{((^\s*\*\s+.+?\n)+)}{"<ul>" . join('', map { s/^\s*\*\s+//; "<li>$_</li>" } split("\n", $1)) . "</ul>"}meg;
+
+    my @bits;
+    $note = join('', map { ref $_ ? scalar((push @bits, inline_element(ref $_, $$_)), "{X$#bits}") : $_ }
+        extract_multiple($note,
+        [
+            { BQ => sub { extract_delimited($_[0], q{`}, '', q{`}) } },
+            { IT => sub { extract_delimited($_[0], q{_}, '', q{_}) } },
+            { BO => sub { extract_delimited($_[0], q{*}, '', q{*}) } },
+            qr/[^`_*]+/,
+        ])
+    );
+    $note =~ s{--}{&mdash;}g;
+    $note =~ s{ \.\.\.}{&nbsp;...}g;
+    $note =~ s{\n+}{</p><p>}g;
+    $note =~ s/{X(\d+)}/$bits[$1]/g;
+
+    return $note;
 }
 
 sub parseScript {
@@ -594,7 +695,7 @@ sub writeVimrc {
     my $self = shift;
 
     my $home_vimrc = File::HomeDir->my_home . "/.vroom/vimrc";
-    my $home_vimrc_content = -e $home_vimrc ? io($home_vimrc)->all : ''; 
+    my $home_vimrc_content = -e $home_vimrc ? io($home_vimrc)->all : '';
 
     my $next_cmd = $self->config->{script}
         ? ':n<CR>:<CR>:call RunIf()<CR>:<CR>gg'
@@ -657,7 +758,7 @@ ${\ $self->config->{vimrc}}
 
     if ($self->config->{vim} =~ /\bgvim\b/) {
         my $home_gvimrc = File::HomeDir->my_home . "/.vroom/gvimrc";
-        my $home_gvimrc_content = -e $home_gvimrc ? io($home_gvimrc)->all : ''; 
+        my $home_gvimrc_content = -e $home_gvimrc ? io($home_gvimrc)->all : '';
 
         io(".gvimrc")->print(<<"...");
 " Values from slides.vroom config section. (under 'gvimrc')
@@ -686,7 +787,7 @@ sub writeHelp {
     QQ              Quit Vroom
 
     RR              Run slide as a program
-    VV              vroom --vroom 
+    VV              vroom --vroom
     EE              Edit file under cursor
     OO              Open file under cursor (Mac OS X)
 
@@ -1024,7 +1125,7 @@ characters.
 
 =item i-##
 
-'i' followed by a negative number means to strip that number of leading 
+'i' followed by a negative number means to strip that number of leading
 characters from the contents of the slide.  This can be useful if you need
 to have characters special to Vroom at the beginning of your lines,
 for example if the contents of your slide is unified diff output.
