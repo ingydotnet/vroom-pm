@@ -21,36 +21,32 @@ use Getopt::Long;
 use Cwd;
 use Carp;
 
-has input => (default => sub {'slides.vroom'});
-has stream => (default => sub {''});
-has ext => (default => sub {''});
-has help => (default => sub{0});
-has clean => (default => sub{0});
-has compile => (default => sub{0});
-has sample => (default => sub{0});
-has run => (default => sub{0});
-has html => (default => sub{0});
-has text => (default => sub{0});
-has ghpublish => (default => sub{0});
-has start => (default => sub{0});
-has digits => (default => sub{0});
-has skip => (default => sub{0});
-has config => (
-    default => sub {
-        +{
-            title => 'Untitled Presentation',
-            height => 24,
-            width => 80,
-            list_indent => 10,
-            skip => 0,
-            vim => 'vim',
-            vimrc => '',
-            gvimrc => '',
-            script => '',
-            auto_size => 0,
-        };
-    }
-);
+has input => 'slides.vroom';
+has stream => '';
+has ext => '';
+has help => 0;
+has clean => 0;
+has compile => 0;
+has sample => 0;
+has run => 0;
+has html => 0;
+has text => 0;
+has ghpublish => 0;
+has start => 0;
+has digits => 0;
+has skip => 0;
+has config => {
+    title => 'Untitled Presentation',
+    height => 24,
+    width => 80,
+    list_indent => 10,
+    skip => 0,
+    vim => 'vim',
+    vimrc => '',
+    gvimrc => '',
+    script => '',
+    auto_size => 0,
+};
 
 sub usage {
     return <<'...';
@@ -574,6 +570,7 @@ sub padVertical {
     my $slide = shift;
     $slide =~ s/\A\s*\n//;
     $slide =~ s/\n\s*\z//;
+    $slide =~ s/ +$//mg;
     my @lines = split /\n/, $slide;
     my $lines = @lines;
     my $before = int(($self->config->{height} - $lines) / 2) - 1;
