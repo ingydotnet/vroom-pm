@@ -23,6 +23,7 @@ use Carp;
 
 has input => (default => sub {'slides.vroom'});
 has notesfile => (default => sub {'notes.txt'});
+has has_notes => (default => sub{0});
 has stream => (default => sub {''});
 has ext => (default => sub {''});
 has help => (default => sub{0});
@@ -378,6 +379,9 @@ sub getInput {
     $self->stream($stream);
 }
 
+my $SLIDE_MARKER = qr/^\*{3}\n/m;
+my $TITLE_MARKER = qr/^%\s*(.*?)\n/m;
+
 sub buildSlides {
     my $self = shift;
     my @split = split /^(----\ *.*)\n/m, $self->stream;
@@ -390,12 +394,13 @@ sub buildSlides {
         $config =~ s/^----\s*(.*?)\s*$/$1/;
         push @raw_configs, $config;
         push @raw_slides, $slide;
+        $self->has_notes(1) if $slide =~ $SLIDE_MARKER;
     }
     $self->{digits} = int(log(@raw_slides)/log(10)) + 2;
 
     my $number = 0;
 
-    '' > io($self->notesfile);                                          # start with a blank file so we can append
+    '' > io($self->notesfile) if $self->has_notes;                      # start with a blank file so we can append
     for my $raw_slide (@raw_slides) {
         my $config = $self->parseSlideConfig(shift @raw_configs);
 
@@ -414,7 +419,7 @@ sub buildSlides {
             next;
         }
 
-        $self->print_notes($title, $number, $notes);
+        $self->print_notes($title, $number, $notes) if $self->has_notes;
 
         $raw_slide = $self->padVertical($raw_slide);
 
@@ -471,8 +476,8 @@ my $NEXT_SLIDE = '<Space>';
 sub extract_notes {
     my $self = shift;
     # have to deal with the slide argument in $_[0] directly so we can modify it
-    my $title = $_[0] =~ s/^%\s*(.*?)\n//m ? $1 : '';
-    my $notes = $_[0] =~ s/^\*{3}\n(.*)\s*\Z//ms ? $1 : '';
+    my $title = $_[0] =~ s/$TITLE_MARKER// ? $1 : '';
+    my $notes = $_[0] =~ s/$SLIDE_MARKER(.*)\s*\Z//s ? $1 : '';
 
     $notes =~ s/^\+/$NEXT_SLIDE\n/mg;
 
@@ -491,12 +496,8 @@ sub parse_notesfile
 {
     my $self = shift;
 
+    return () unless -r $self->notesfile;
     my $notes = io($self->notesfile)->slurp;
-    unless ($notes)
-    {
-        warn("no notes file found");
-        return ();
-    }
 
     # first slide doesn't have a marker, so we'll add one, for consistency
     $notes = $NEXT_SLIDE . $notes;
