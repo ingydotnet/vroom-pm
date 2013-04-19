@@ -380,6 +380,7 @@ sub getInput {
     $self->stream($stream);
 }
 
+my $TRANSITION   = qr/^\+/m;
 my $SLIDE_MARKER = qr/^\*{3}\n/m;
 my $TITLE_MARKER = qr/^%\s*(.*?)\n/m;
 
@@ -407,7 +408,10 @@ sub buildSlides {
 
         next if $config->{skip};
 
-        my ($title, $notes) = $self->extract_notes($raw_slide);
+        # could move the increment of $number up here, but then we'd count config slides
+        # and we don't really want to do that
+        # so just use $number + 1 for now, and we'll increment below
+        my ($title, $notes) = $self->extract_notes($raw_slide, $number + 1);
 
         $raw_slide = $self->applyOptions($raw_slide, $config)
             or next;
@@ -427,7 +431,7 @@ sub buildSlides {
         my @slides;
         my @scripts;
         my $slide = '';
-        for my $part (split /^\+/m, $raw_slide) {
+        for my $part (split /$TRANSITION/, $raw_slide) {
             $slide = '' if $config->{replace};
             my $script = '';
             if ($self->config->{script}) {
@@ -477,10 +481,32 @@ my $NEXT_SLIDE = '<Space>';
 sub extract_notes {
     my $self = shift;
     # have to deal with the slide argument in $_[0] directly so we can modify it
-    my $title = $_[0] =~ s/$TITLE_MARKER// ? $1 : '';
+    my $number = $_[1];
+
+    my $title = $_[0] =~ s/$TITLE_MARKER// ? $1 : "Slide $number";
     my $notes = $_[0] =~ s/$SLIDE_MARKER(.*)\s*\Z//s ? $1 : '';
 
-    $notes =~ s/^\+/$NEXT_SLIDE\n/mg;
+    # verify that the number of transitions in the notes matches the number of transitions in the slide
+    # if not, do something about it
+    # (note: using a secret operator here; see http://www.catonmat.net/blog/secret-perl-operators/#goatse )
+    my $num_slide_transitions =()= $_[0] =~ /$TRANSITION/g;
+    my $num_notes_transitions =()= $notes =~ /$TRANSITION/g;
+    if ($num_notes_transitions < $num_slide_transitions)
+    {
+        # add more transitions
+        $notes .= "\n+" x ($num_slide_transitions - $num_notes_transitions);
+    }
+    elsif ($num_notes_transitions > $num_slide_transitions)
+    {
+        # warn, and then remove transitions
+        # we'll reverse the string so we can remove transitions from back to front
+        warn("too many transitions for slide $title");
+        $notes = reverse $notes;
+        $notes =~ s/\+\n/\n/ for 1..($num_notes_transitions - $num_slide_transitions);
+        $notes = reverse $notes;
+    }
+
+    $notes =~ s/$TRANSITION/$NEXT_SLIDE\n/g;
 
     return ($title, $notes);
 }
@@ -488,7 +514,6 @@ sub extract_notes {
 sub print_notes {
     my $self = shift;
     my ($title, $number, $notes) = @_;
-    $title ||= "Slide $number";
 
     "\n" . ($number == 1 ? ' ' x length($NEXT_SLIDE) : $NEXT_SLIDE) . "    -- $title --\n\n$notes\n" >> io($self->notesfile);
 }
