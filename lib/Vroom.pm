@@ -1117,6 +1117,16 @@ A line that starts with '==' is a header line. It will be centered.
 Lines that begin with a '+' cause vroom to split the slide there,
 causing an animation effect.
 
+Lines that begin with a '%' are slide titles.  Titles are completely
+optional.  They are used with notes files, and also for the index
+page if you convert to HTML.  You can have only one of these per
+slide.
+
+A line consisting of nothing but '***' indicates that what follows
+are notes for this slide.  Notes are also optional.  They are
+primarily used for notes files, but are also included if you convert
+your presentation to HTML.  See L<SLIDE NOTES> below.
+
 =head1 CONFIGURATION OPTIONS
 
 Each slide can have one or more configuration options. Options are
@@ -1231,6 +1241,25 @@ These are all documented by gvim's help system. Please see that for more
 information.
 
 =back
+
+=head1 SLIDE NOTES
+
+You can add notes to each slide, if you like.  When you create your
+presentation (with C<vroom --compile> or C<vroom --vroom>), a file
+called C<notes.txt> will be created containing all your notes, along
+with indications of when to proceed to the next slide.  If you give
+any of your slides titles, they will also be put into the notes file
+in order to help you keep track of where you are in the
+presentation.
+
+You can print out your notes file, or simply bring it up on a
+separate device (such as your smartphone).  The notes are not part
+of the presentation; they are just for you.
+
+However, if you convert your presentation to HTML, the notes will be
+included in a smaller font below each slide.  This is useful when
+sharing your slides with others who were not present at the
+presentation.
 
 =head1 KEY MAPPINGS
 
