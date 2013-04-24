@@ -21,6 +21,8 @@ use Getopt::Long;
 use Cwd;
 use Carp;
 
+use Encode;
+
 has input => 'slides.vroom';
 has stream => '';
 has ext => '';
@@ -243,7 +245,7 @@ sub makeHTML {
                 title => "$slide",
                 prev => $prev,
                 next => $next,
-                content => $text,
+                content => decode_utf8($text),
             }
         );
         io("html/$slide.html")->print($text);
@@ -261,7 +263,7 @@ sub makeHTML {
     io("html/index.html")->print(
         Template::Toolkit::Simple->new()->render(
             $self->indexTemplate,
-            {
+              {
                 config => $self->config,
                 index => $index,
             }
@@ -312,6 +314,7 @@ href="http://ingydotnet.github.com/vroom-pm">Vroom</a>. Use &lt;SPACE&gt; key to
 forward and &lt;BACKSPACE&gt; to go backwards.
 </p>
 </body>
+</html>
 ...
 }
 
@@ -351,6 +354,7 @@ function navigate(e) {
 [%- content | html -%]
 </pre>
 </body>
+</html>
 ...
 }
 
