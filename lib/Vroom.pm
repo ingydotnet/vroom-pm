@@ -235,7 +235,7 @@ sub makeHTML {
     my @slides = glob('0*');
     for (my $i = 0; $i < @slides; $i++) {
         my $slide = $slides[$i];
-        my $prev = ($i > 0) ? $slides[$i - 1] : '';
+        my $prev = ($i > 0) ? $slides[$i - 1] : 'index';
         my $next = ($i + 1 < @slides) ? $slides[$i + 1] : '';
         my $text = io($slide)->all;
         my $title = $text;
@@ -257,7 +257,7 @@ sub makeHTML {
         next if $slide =~ /^\d+[a-z]/;
         my $title = io($slide)->all;
         $title =~ s/.*?((?-s:\S.*)).*/$1/s;
-        push @$index, [$slide, $title];
+        push @$index, [$slide, decode_utf8($title)];
     }
 
     io("html/index.html")->print(
@@ -266,6 +266,7 @@ sub makeHTML {
             {
                 config => $self->config,
                 index => $index,
+
             }
         )
     );
@@ -284,7 +285,7 @@ function navigate(e) {
         ? e.keyCode
         : e.which;
     if (keynum == 13 || keynum == 32) {
-        window.location = "001.html";
+        window.location = "[% index.0.0 %].html";
         return false;
     }
     return true;
@@ -299,7 +300,7 @@ h4 {
 }
 </style>
 </head>
-<body>
+<body onkeydown="return navigate(event)">
 <h4>Use SPACEBAR to peruse the slides or click one to start...<h4>
 <h1>[% config.title | html %]</h1>
 <ul>
@@ -349,7 +350,7 @@ function navigate(e) {
 }
 </script>
 </head>
-<body onkeypress="return navigate(event)">
+<body onkeydown="return navigate(event)">
 <pre>
 [%- content | html -%]
 </pre>
