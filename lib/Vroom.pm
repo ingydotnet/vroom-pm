@@ -263,7 +263,7 @@ sub makeHTML {
     io("html/index.html")->print(
         Template::Toolkit::Simple->new()->render(
             $self->indexTemplate,
-              {
+            {
                 config => $self->config,
                 index => $index,
             }
