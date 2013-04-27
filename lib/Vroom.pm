@@ -44,6 +44,7 @@ has config => {
     list_indent => 10,
     skip => 0,
     vim => 'vim',
+    vim_opts => '-u NONE',
     vimrc => '',
     gvimrc => '',
     script => '',
@@ -635,6 +636,8 @@ time, and rerun vroom. You should not get this message again.
     $title =~ s/\s/\\ /g;
     io(".vimrc")->print(<<"...");
 " This .vimrc file was created by Vroom-$VERSION
+set nocompatible
+syntax on
 $script_functions
 map <SPACE> $next_cmd
 map <BACKSPACE> :N<CR>:<CR>gg
@@ -701,7 +704,8 @@ sub writeHelp {
 sub startUp {
     my $self = shift;
     my $vim = $self->config->{vim};
-    exec "$vim 0*";
+    my $vim_opts = $self->config->{vim_opts} || '';
+    exec "$vim $vim_opts '+source .vimrc' 0*";
 }
 
 sub sampleSlides {
@@ -725,9 +729,10 @@ please delete or move this one.
 # Basic config options.
 title: Vroom!
 indent: 5
-height: 18
-width: 69
-#auto_size: 1
+auto_size: 1
+# height: 18
+# width: 69
+vim_opts: '-u NONE'
 skip: 0
 
 # The following options are for Gvim usage.
@@ -887,11 +892,6 @@ You can do things like advance to the next slide with the spacebar.
 Vroom creates a file called C<./.vimrc> with helpful key mappings for
 navigating a slideshow. See L<KEY MAPPINGS> below.
 
-Please note that you will need the following line in your
-C<$HOME/.vimrc> file in order to pick up the local C<.vimrc> file.
-
-    set exrc
-
 Vroom takes advantage of Vim's syntax highlighting. It also lets you run
 slides that contain code.
 
@@ -903,35 +903,35 @@ Vroom has a few command line options:
 
 =over
 
-=item vroom --new
+=item vroom -new
 
 Write an example C<slides.vroom> file. This example contains all the
 config options and also examples of all the Vroom syntax features.
 
-=item vroom --vroom
+=item vroom -vroom
 
 Compile (create) the slides files from the input file and start vim
 show.
 
-=item vroom --compile
+=item vroom -compile
 
 Just compile the slides.
 
-=item vroom --html
+=item vroom -html
 
 Publish the slides to HTML, with embedded JavaScript to navigate with
 the spacebar and backspace keys. Created in the C<html/> subdirectory.
 
-=item vroom --text
+=item vroom -text
 
 Publish the slides to plain text. This action uses all the text slides in
 their unsplit form.  Created in the C<text/> subdirectory.
 
-=item vroom --clean
+=item vroom -clean
 
 Clean up all the compiled output files.
 
-=item vroom --ghpublish
+=item vroom -ghpublish
 
 Creates a shell script in the current directory, that is intended to
 publish your slides to the special GitHub branch called gh-pages. See
@@ -946,11 +946,11 @@ The skip option takes a number as its input and skips that number of
 files during compilation. This is useful when you are polishing your slides
 and are finished with the first 50. You can say:
 
-    vroom --vroom --skip=50
+    vroom -vroom --skip=50
 
 and it will start on slide #51.
 
-=item vroom <action> --input=<file_name>
+=item vroom <action> -input=<file_name>
 
 This option lets you specify an alternate input file name, instead of the
 default one, C<slides.vroom>.
@@ -964,10 +964,10 @@ Here is an example slides.vroom file:
     ---- config
     # These are YAML settings for Vroom
     title: My Spiffy Slideshow
-    height: 84
-    width: 20
+    # height: 84
+    # width: 20
+    auto_size: 1  # Determines height/width automatically
     # skip: 12      # Skip 12 slides. Useful when making slides.
-    # auto_size: 1  # Determines height/width automatically
     ---- center
     My Presentation
 

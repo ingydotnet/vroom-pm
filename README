@@ -27,11 +27,6 @@ DESCRIPTION
     Vroom creates a file called "./.vimrc" with helpful key mappings for
     navigating a slideshow. See "KEY MAPPINGS" below.
 
-    Please note that you will need the following line in your "$HOME/.vimrc"
-    file in order to pick up the local ".vimrc" file.
-
-        set exrc
-
     Vroom takes advantage of Vim's syntax highlighting. It also lets you run
     slides that contain code.
 
