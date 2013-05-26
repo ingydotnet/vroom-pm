@@ -35,30 +35,30 @@ DESCRIPTION
 COMMAND USAGE
     Vroom has a few command line options:
 
-    vroom --new
+    vroom -new
         Write an example "slides.vroom" file. This example contains all the
         config options and also examples of all the Vroom syntax features.
 
-    vroom --vroom
+    vroom -vroom
         Compile (create) the slides files from the input file and start vim
         show.
 
-    vroom --compile
+    vroom -compile
         Just compile the slides.
 
-    vroom --html
+    vroom -html
         Publish the slides to HTML, with embedded JavaScript to navigate
         with the spacebar and backspace keys. Created in the "html/"
         subdirectory.
 
-    vroom --text
+    vroom -text
         Publish the slides to plain text. This action uses all the text
         slides in their unsplit form. Created in the "text/" subdirectory.
 
-    vroom --clean
+    vroom -clean
         Clean up all the compiled output files.
 
-    vroom --ghpublish
+    vroom -ghpublish
         Creates a shell script in the current directory, that is intended to
         publish your slides to the special GitHub branch called gh-pages.
         See "GITHUB NOTES" below.
@@ -72,11 +72,11 @@ COMMAND USAGE
         files during compilation. This is useful when you are polishing your
         slides and are finished with the first 50. You can say:
 
-            vroom --vroom --skip=50
+            vroom -vroom --skip=50
 
         and it will start on slide #51.
 
-    vroom <action> --input=<file_name>
+    vroom <action> -input=<file_name>
         This option lets you specify an alternate input file name, instead
         of the default one, "slides.vroom".
 
@@ -86,10 +86,10 @@ INPUT FORMAT
         ---- config
         # These are YAML settings for Vroom
         title: My Spiffy Slideshow
-        height: 84
-        width: 20
+        # height: 84
+        # width: 20
+        auto_size: 1  # Determines height/width automatically
         # skip: 12      # Skip 12 slides. Useful when making slides.
-        # auto_size: 1  # Determines height/width automatically
         ---- center
         My Presentation
 
@@ -112,6 +112,15 @@ INPUT FORMAT
 
     Lines that begin with a '+' cause vroom to split the slide there,
     causing an animation effect.
+
+    Lines that begin with a '%' are slide titles. Titles are completely
+    optional. They are used with notes files, and also for the index page if
+    you convert to HTML. You can have only one of these per slide.
+
+    A line consisting of nothing but '***' indicates that what follows are
+    notes for this slide. Notes are also optional. They are primarily used
+    for notes files, but are also included if you convert your presentation
+    to HTML. See "SLIDE NOTES" below.
 
 CONFIGURATION OPTIONS
     Each slide can have one or more configuration options. Options are a
@@ -204,6 +213,22 @@ CONFIGURATION OPTIONS
 
         These are all documented by gvim's help system. Please see that for
         more information.
+
+SLIDE NOTES
+    You can add notes to each slide, if you like. When you create your
+    presentation (with "vroom --compile" or "vroom --vroom"), a file called
+    "notes.txt" will be created containing all your notes, along with
+    indications of when to proceed to the next slide. If you give any of
+    your slides titles, they will also be put into the notes file in order
+    to help you keep track of where you are in the presentation.
+
+    You can print out your notes file, or simply bring it up on a separate
+    device (such as your smartphone). The notes are not part of the
+    presentation; they are just for you.
+
+    However, if you convert your presentation to HTML, the notes will be
+    included in a smaller font below each slide. This is useful when sharing
+    your slides with others who were not present at the presentation.
 
 KEY MAPPINGS
     These are the standard key mappings specified in the local ".vimrc".
@@ -307,7 +332,7 @@ AUTHOR
     Ingy döt Net <ingy@ingy.net>
 
 COPYRIGHT AND LICENSE
-    Copyright (c) 2008-2012. Ingy döt Net.
+    Copyright (c) 2008-2013. Ingy döt Net.
 
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.

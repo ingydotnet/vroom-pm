@@ -1,4 +1,9 @@
 ---
+version: 0.28
+date:    
+changes:
+- Buddy Burden++ added notes support!
+---
 version: 0.27
 date:    Tue Jul 17 09:43:41 PDT 2012
 changes:
