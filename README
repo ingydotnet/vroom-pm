@@ -4,10 +4,10 @@ NAME
 SYNOPSIS
         > mkdir MySlides    # Make a Directory for Your Slides
         > cd MySlides       # Go In There
-        > vroom -new        # Create Example Slides File
+        > vroom new         # Create Example Slides File
         > vim slides.vroom  # Edit the File and Add Your Own Slides
-        > vroom --vroom     # Show Your Slides
-        > vroom --html      # Publish Your Slides as HTML
+        > vroom vroom       # Show Your Slides
+        > vroom html        # Publish Your Slides as HTML
 
 DESCRIPTION
     Ever given a Slide Show and needed to switch over to Vim?
@@ -20,7 +20,7 @@ DESCRIPTION
     of files that begin with '0', like '03' or '07c' or '05b.pl'.
 
     The slides are named in alphabetic order. That means you can bring them
-    all into a Vim session with the command: "vim 0*". "vroom --vroom" does
+    all into a Vim session with the command: "vim 0*". "vroom vroom" does
     exactly that.
 
     You can do things like advance to the next slide with the spacebar.
@@ -35,30 +35,30 @@ DESCRIPTION
 COMMAND USAGE
     Vroom has a few command line options:
 
-    vroom -new
+    vroom new
         Write an example "slides.vroom" file. This example contains all the
         config options and also examples of all the Vroom syntax features.
 
-    vroom -vroom
+    vroom vroom
         Compile (create) the slides files from the input file and start vim
         show.
 
-    vroom -compile
+    vroom compile
         Just compile the slides.
 
-    vroom -html
+    vroom html
         Publish the slides to HTML, with embedded JavaScript to navigate
         with the spacebar and backspace keys. Created in the "html/"
         subdirectory.
 
-    vroom -text
+    vroom text
         Publish the slides to plain text. This action uses all the text
         slides in their unsplit form. Created in the "text/" subdirectory.
 
-    vroom -clean
+    vroom clean
         Clean up all the compiled output files.
 
-    vroom -ghpublish
+    vroom ghpublish
         Creates a shell script in the current directory, that is intended to
         publish your slides to the special GitHub branch called gh-pages.
         See "GITHUB NOTES" below.
@@ -72,11 +72,11 @@ COMMAND USAGE
         files during compilation. This is useful when you are polishing your
         slides and are finished with the first 50. You can say:
 
-            vroom -vroom --skip=50
+            vroom vroom --skip=50
 
         and it will start on slide #51.
 
-    vroom <action> -input=<file_name>
+    vroom <action> --input=<file_name>
         This option lets you specify an alternate input file name, instead
         of the default one, "slides.vroom".
 
@@ -117,7 +117,7 @@ INPUT FORMAT
     optional. They are used with notes files, and also for the index page if
     you convert to HTML. You can have only one of these per slide.
 
-    A line consisting of nothing but '***' indicates that what follows are
+    A line consisting of nothing but '====' indicates that what follows are
     notes for this slide. Notes are also optional. They are primarily used
     for notes files, but are also included if you convert your presentation
     to HTML. See "SLIDE NOTES" below.
@@ -216,7 +216,7 @@ CONFIGURATION OPTIONS
 
 SLIDE NOTES
     You can add notes to each slide, if you like. When you create your
-    presentation (with "vroom --compile" or "vroom --vroom"), a file called
+    presentation (with "vroom compile" or "vroom vroom"), a file called
     "notes.txt" will be created containing all your notes, along with
     indications of when to proceed to the next slide. If you give any of
     your slides titles, they will also be put into the notes file in order
@@ -300,7 +300,7 @@ GITHUB NOTES
     website for each github repo. I use this feature to publish the html
     output of my talk. I do something like this:
 
-        vroom --html
+        vroom html
         mv html /tmp
         git branch gh-pages
         git checkout gh-pages
@@ -312,9 +312,9 @@ GITHUB NOTES
         git push origin gh-pages
         git checkout master
 
-    2B) Vroom comes with a "--ghpublish" option. If you run:
+    2B) Vroom comes with a "ghpublish" option. If you run:
 
-        > vroom -ghpublish
+        > vroom ghpublish
 
     it will generate a script called "ghpublish" that contains commands like
     the ones above, to publish your slides to a gh-pages branch.

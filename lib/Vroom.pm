@@ -55,22 +55,24 @@ has config => {
 
 sub usage {
     return <<'...';
-    Usage: vroom [options]
+    Usage: vroom <command> [options]
 
-    -new        - Create a sample 'slides.vroom' file
-    -vroom      - Start slideshow
-    -compile    - Generate slides
-    -html       - Publish slides as HTML
-    -text       - Publish slides as plain text
+    Commands:
+        new          - Create a sample 'slides.vroom' file
+        vroom        - Start slideshow
+        compile      - Generate slides
+        html         - Publish slides as HTML
+        text         - Publish slides as plain text
+        clean        - Delete generated files
+        help         - Get help!
 
-    -skip=#     - Skip # of slides
-    -input=name - Specify an input file name
+    Options:
+        --skip=#     - Skip # of slides
+        --input=name - Specify an input file name
 
-    -clean      - Delete generated files
-    -help       - Get help!
 ...
 }
-
+use XXX;
 sub vroom {
     my $self = ref($_[0]) ? shift : (shift)->new;
 
@@ -119,17 +121,26 @@ Don't run vroom in your home directory.
 Create a new directory for your slides and run vroom from there.
 ...
 
+    my $cmd = shift(@ARGV) or die $self->usage;
+    die $self->usage unless $cmd =~ s/
+        ^-{0,2}(
+            help |
+            new |
+            vroom |
+            compile |
+            run |
+            html |
+            text |
+            clean |
+            ghpublish
+        )$
+    /$1/x;
+    $cmd = 'start' if $cmd eq 'vroom';
+    $cmd = 'sample' if $cmd eq 'new';
+    $self->{$cmd} = 1;
+
     GetOptions(
-        "help" => \$self->{help},
-        "new" => \$self->{sample},
-        "clean" => \$self->{clean},
-        "compile" => \$self->{compile},
-        "run" => \$self->{run},
-        "html" => \$self->{html},
-        "text" => \$self->{text},
-        "ghpublish" => \$self->{ghpublish},
         "input=s"  => \$self->{input},
-        "vroom"  => \$self->{start},
         "skip=i" => \$self->{skip},
     ) or die $self->usage;
 
@@ -819,7 +830,7 @@ sub writeHelp {
     QQ              Quit Vroom
 
     RR              Run slide as a program
-    VV              vroom --vroom
+    VV              vroom vroom
     EE              Edit file under cursor
     OO              Open file under cursor (Mac OS X)
 
@@ -848,7 +859,7 @@ please delete or move this one.
     io($file)->print(<<'...');
 # This is a sample Vroom input file. It should help you get started.
 #
-# Edit this file with your content. Then run `vroom --vroom` to start
+# Edit this file with your content. Then run `vroom vroom` to start
 # the show!
 #
 # See `perldoc Vroom` for complete details.
@@ -893,7 +904,7 @@ by Ingy döt Net
 
 * Write a file called 'slides.vroom'.
   * Do this in a new directory.
-* Run 'vroom --vroom'.
+* Run 'vroom vroom'.
 * Voilà!
 
 ----
@@ -953,7 +964,7 @@ if [ -e "/tmp/html" ]; then
 fi
 
 # Create HTML slides.
-vroom --html || exit 1
+vroom html || exit 1
 # Move the html directory to /tmp
 mv html /tmp || exit 1
 # Stash any local stuff that isn't committed.
@@ -996,10 +1007,10 @@ If it makes sense to you, run it. (at your own risk :)
 
     > mkdir MySlides    # Make a Directory for Your Slides
     > cd MySlides       # Go In There
-    > vroom -new        # Create Example Slides File
+    > vroom new         # Create Example Slides File
     > vim slides.vroom  # Edit the File and Add Your Own Slides
-    > vroom --vroom     # Show Your Slides
-    > vroom --html      # Publish Your Slides as HTML
+    > vroom vroom       # Show Your Slides
+    > vroom html        # Publish Your Slides as HTML
 
 =head1 DESCRIPTION
 
@@ -1013,7 +1024,7 @@ don't compile to HTML or JavaScript or XUL. They get turned into a set
 of files that begin with '0', like '03' or '07c' or '05b.pl'.
 
 The slides are named in alphabetic order. That means you can bring them
-all into a Vim session with the command: C<vim 0*>. C<vroom --vroom>
+all into a Vim session with the command: C<vim 0*>. C<vroom vroom>
 does exactly that.
 
 You can do things like advance to the next slide with the spacebar.
@@ -1031,35 +1042,35 @@ Vroom has a few command line options:
 
 =over
 
-=item vroom -new
+=item vroom new
 
 Write an example C<slides.vroom> file. This example contains all the
 config options and also examples of all the Vroom syntax features.
 
-=item vroom -vroom
+=item vroom vroom
 
 Compile (create) the slides files from the input file and start vim
 show.
 
-=item vroom -compile
+=item vroom compile
 
 Just compile the slides.
 
-=item vroom -html
+=item vroom html
 
 Publish the slides to HTML, with embedded JavaScript to navigate with
 the spacebar and backspace keys. Created in the C<html/> subdirectory.
 
-=item vroom -text
+=item vroom text
 
 Publish the slides to plain text. This action uses all the text slides in
 their unsplit form.  Created in the C<text/> subdirectory.
 
-=item vroom -clean
+=item vroom clean
 
 Clean up all the compiled output files.
 
-=item vroom -ghpublish
+=item vroom ghpublish
 
 Creates a shell script in the current directory, that is intended to
 publish your slides to the special GitHub branch called gh-pages. See
@@ -1074,11 +1085,11 @@ The skip option takes a number as its input and skips that number of
 files during compilation. This is useful when you are polishing your slides
 and are finished with the first 50. You can say:
 
-    vroom -vroom --skip=50
+    vroom vroom --skip=50
 
 and it will start on slide #51.
 
-=item vroom <action> -input=<file_name>
+=item vroom <action> --input=<file_name>
 
 This option lets you specify an alternate input file name, instead of the
 default one, C<slides.vroom>.
@@ -1247,7 +1258,7 @@ information.
 =head1 SLIDE NOTES
 
 You can add notes to each slide, if you like.  When you create your
-presentation (with C<vroom --compile> or C<vroom --vroom>), a file
+presentation (with C<vroom compile> or C<vroom vroom>), a file
 called C<notes.txt> will be created containing all your notes, along
 with indications of when to proceed to the next slide.  If you give
 any of your slides titles, they will also be put into the notes file
@@ -1353,7 +1364,7 @@ the things I do to make this work well:
    website for each github repo. I use this feature to publish the html
    output of my talk. I do something like this:
 
-    vroom --html
+    vroom html
     mv html /tmp
     git branch gh-pages
     git checkout gh-pages
@@ -1365,9 +1376,9 @@ the things I do to make this work well:
     git push origin gh-pages
     git checkout master
 
-2B) Vroom comes with a C<--ghpublish> option. If you run:
+2B) Vroom comes with a C<ghpublish> option. If you run:
 
-    > vroom -ghpublish
+    > vroom ghpublish
 
 it will generate a script called C<ghpublish> that contains commands like the
 ones above, to publish your slides to a gh-pages branch.

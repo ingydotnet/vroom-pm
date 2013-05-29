@@ -1,8 +1,0 @@
-+ Support `vroom -new`
-  + Writes a sample slides.vroom file.
-+ Map '?' to a help screen.
-x Support `---- skip=5`
-+ Refactor the file extension list
-+ Make sure initial comments are stripped
-+ Put gh-pages and github support info in docs
-+ vroom --ghpublish
