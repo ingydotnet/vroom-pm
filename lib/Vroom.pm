@@ -72,7 +72,7 @@ sub usage {
 
 ...
 }
-use XXX;
+
 sub vroom {
     my $self = ref($_[0]) ? shift : (shift)->new;
 
