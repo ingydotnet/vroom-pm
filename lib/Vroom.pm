@@ -383,7 +383,7 @@ sub getInput {
 }
 
 my $TRANSITION   = qr/^\+/m;
-my $SLIDE_MARKER = qr/^\*{3}\n/m;
+my $SLIDE_MARKER = qr/^={4}\n/m;
 my $TITLE_MARKER = qr/^%\s*(.*?)\n/m;
 
 sub buildSlides {
@@ -1124,7 +1124,7 @@ optional.  They are used with notes files, and also for the index
 page if you convert to HTML.  You can have only one of these per
 slide.
 
-A line consisting of nothing but '***' indicates that what follows
+A line consisting of nothing but '====' indicates that what follows
 are notes for this slide.  Notes are also optional.  They are
 primarily used for notes files, but are also included if you convert
 your presentation to HTML.  See L<SLIDE NOTES> below.
