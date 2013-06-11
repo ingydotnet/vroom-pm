@@ -1,5 +1,5 @@
 use Test::More tests => 1;
 
-use Vroom::Vroom;
+use Vroom;
 
-pass 'Vroom::Vroom loaded with no errors.';
+pass 'Vroom loaded with no errors.';
