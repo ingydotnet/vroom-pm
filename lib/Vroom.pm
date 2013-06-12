@@ -9,7 +9,7 @@ use 5.006001;
 package Vroom;
 use Vroom::Mo;
 
-our $VERSION = '0.28';
+our $VERSION = '0.29';
 
 use File::HomeDir 0.99;
 use IO::All 0.44;

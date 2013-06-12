@@ -1,4 +1,9 @@
 ---
+version: 0.29
+date:    Wed Jun 12 09:29:51 PDT 2013
+changes:
+- Tests fixed by svennieboy++
+---
 version: 0.28
 date:    Wed May 29 12:36:28 PDT 2013
 changes:
