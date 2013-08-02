@@ -156,10 +156,12 @@ CONFIGURATION OPTIONS
         is unified diff output.
 
     perl,ruby,python,php,javascript,haskell,actionscript,html,yaml,xml,json,
-    make,shell,diff
+    make,shell,diff,extEXT
         Specifies that the slide is one of those syntaxen, and that the
         appropriate file extension will be used, thus causing vim to syntax
-        highlight the slide.
+        highlight the slide. You can also tell "vroom" to use a custom,
+        arbitrary file extension by using "extEXT" where "EXT" is the custom
+        extension you would like to use ("extsql" for example).
 
     include file-path-name
         Replace the line with the contents of the specified file. Useful to

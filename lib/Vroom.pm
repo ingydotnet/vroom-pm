@@ -642,7 +642,7 @@ sub parseSlideConfig {
         $config->{$option} = 1
             if $option =~ /^cd/;
         $config->{$1} = 1
-            if $option =~ /^(config|skip|center|replace|$type_list)$/;
+            if $option =~ /^(config|skip|center|replace|ext\w+|$type_list)$/;
         $config->{indent} = $1
             if $option =~ /i(\d+)/;
         $config->{undent} = $1
@@ -703,6 +703,10 @@ sub applyOptions {
                 $ext = ".cd.$e";
                 last;
             }
+        }
+        elsif ($key =~ s/^ext//) {
+            $ext = ".$key";
+            last;
         }
     }
     $self->ext($ext);
@@ -1180,11 +1184,13 @@ characters from the contents of the slide.  This can be useful if you need
 to have characters special to Vroom at the beginning of your lines,
 for example if the contents of your slide is unified diff output.
 
-=item perl,ruby,python,php,javascript,haskell,actionscript,html,yaml,xml,json,make,shell,diff
+=item perl,ruby,python,php,javascript,haskell,actionscript,html,yaml,xml,json,make,shell,diff,extEXT
 
 Specifies that the slide is one of those syntaxen, and that the
 appropriate file extension will be used, thus causing vim to syntax
-highlight the slide.
+highlight the slide.  You can also tell C<vroom> to use a custom, arbitrary
+file extension by using C<extEXT> where C<EXT> is the custom extension
+you would like to use (C<extsql> for example).
 
 =item include file-path-name
 
