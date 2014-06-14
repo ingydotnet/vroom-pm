@@ -1,4 +1,9 @@
 ---
+version: 0.30
+date:    Sat Jun 14 14:26:02 PDT 2014
+changes:
+- Update to Zilla::Dist
+---
 version: 0.29
 date:    Wed Jun 12 09:29:51 PDT 2013
 changes:

@@ -1,0 +1,27 @@
+language: perl
+
+perl:
+- '5.18'
+- '5.16'
+- '5.14'
+- '5.12'
+- '5.10'
+- '5.8'
+
+install:
+- cpanm --quiet --notest
+  Devel::Cover::Report::Coveralls
+  File::HomeDir
+  IO::All
+  Template::Toolkit::Simple
+  Term::Size
+  YAML::XS
+
+script:
+- PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
+  prove -lv test/
+- cover
+
+after_success:
+- cover -report coveralls
+

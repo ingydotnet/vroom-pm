@@ -1,0 +1,33 @@
+=meta: 0.0.1
+
+name: Vroom
+version: 0.30
+abstract: Slide Shows in Vim
+homepage: https://metacpan.org/release/Vroom
+
+license: perl
+copyright: 2008-2014. Ingy döt Net.
+author:
+  name: Ingy döt Net
+  email: ingy@cpan.org
+  github: ingydotnet
+  twitter: ingydotnet
+  freenode: ingy
+  homepage: http://ingy.net
+
+requires:
+  perl: 5.8.1
+
+requires:
+  File::HomeDir: 0
+  IO::All: 0
+  Template::Toolkit::Simple: 0
+  Term::Size: 0
+  YAML::XS: 0
+
+devel:
+  git: git@github.org/ingydotnet/vroom-pm
+  irc: irc.perl.org/perl
+  bug: https://github.com/ingydotnet/vroom-pm/issues/
+
+=travis: perl
