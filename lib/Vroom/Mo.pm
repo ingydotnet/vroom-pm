@@ -1,4 +1,5 @@
 package Vroom::Mo;
+
 # use Mo qw'default import';
 #   The following line of code was produced from the previous line by
 #   Mo::Inline version 0.34
