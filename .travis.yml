@@ -25,3 +25,8 @@ script:
 after_success:
 - cover -report coveralls
 
+
+# Hack to not run on tag pushes:
+branches:
+  except:
+  - /^v?[0-9]+\.[0-9]+/

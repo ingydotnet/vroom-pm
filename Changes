@@ -1,4 +1,10 @@
 ---
+version: 0.31
+date:    Mon Jun 16 22:51:56 PDT 2014
+changes:
+- Try new travis excludes
+- Use manual VERSION
+---
 version: 0.30
 date:    Sat Jun 14 14:26:02 PDT 2014
 changes:

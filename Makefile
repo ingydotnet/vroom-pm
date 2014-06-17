@@ -36,8 +36,8 @@ help:
 	@echo '    make distshell - Open new shell into new distdir'
 	@echo '    make disttest  - Run the dist tests'
 	@echo ''
-	@echo '    make publish   - Publish the dist to CPAN'
-	@echo '    make preflight - Dryrun of publish'
+	@echo '    make release   - Release the dist to CPAN'
+	@echo '    make preflight - Dryrun of release'
 	@echo ''
 	@echo '    make readme    - Make the ReadMe.pod file'
 	@echo '    make travis    - Make a travis.yml file'
@@ -53,7 +53,7 @@ install: distdir
 	(cd $(DISTDIR); perl Makefile.PL; make install)
 	make clean
 
-update: makefile readme travis
+update: makefile readme travis version
 
 cpan:
 	zild-make-cpan
@@ -83,7 +83,7 @@ distshell: distdir
 disttest: cpan
 	(cd cpan; dzil test) && make clean
 
-publish release: update test check-release disttest
+release: update test check-release disttest
 	make dist
 	cpan-upload $(DIST)
 	git push
@@ -131,3 +131,5 @@ makefile:
 	rm /tmp/Makefile
 endif
 
+version:
+	zild-version-update
