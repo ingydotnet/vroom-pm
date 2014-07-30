@@ -1,6 +1,6 @@
 use strict; use warnings;
 package Vroom;
-our $VERSION = '0.31';
+our $VERSION = '0.32';
 use Vroom::Mo;
 
 use File::HomeDir;

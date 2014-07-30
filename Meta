@@ -1,7 +1,7 @@
 =meta: 0.0.1
 
 name: Vroom
-version: 0.31
+version: 0.32
 abstract: Slide Shows in Vim
 homepage: https://metacpan.org/release/Vroom
 
@@ -26,8 +26,10 @@ requires:
   YAML::XS: 0
 
 devel:
-  git: git@github.org/ingydotnet/vroom-pm
-  irc: irc.perl.org/perl
-  bug: https://github.com/ingydotnet/vroom-pm/issues/
+  git: https://github.com/ingydotnet/vroom-pm
+  bug: https://github.com/ingydotnet/vroom-pm/issues
+  irc: irc.freenode.net#pkg
 
-=travis: perl
+=travis:
+  type: perl
+  irc: irc.freenode.net#pkg
