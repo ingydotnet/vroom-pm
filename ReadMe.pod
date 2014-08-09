@@ -49,38 +49,38 @@ Since Vim is an editor, you can change your slides during the show.
 
 =head1 COMMAND USAGE
 
-Vroom has a few command line options:
+C<vroom> has a few command line options:
 
 =over
 
-=item vroom new
+=item C<vroom new>
 
 Write an example C<slides.vroom> file. This example contains all the config
 options and also examples of all the Vroom syntax features.
 
-=item vroom vroom
+=item C<vroom vroom>
 
 Compile (create) the slides files from the input file and start vim show.
 
-=item vroom compile
+=item C<vroom compile>
 
 Just compile the slides.
 
-=item vroom html
+=item C<vroom html>
 
 Publish the slides to HTML, with embedded JavaScript to navigate with the
 spacebar and backspace keys. Created in the C<html/> subdirectory.
 
-=item vroom text
+=item C<vroom text>
 
 Publish the slides to plain text. This action uses all the text slides in
 their unsplit form. Created in the C<text/> subdirectory.
 
-=item vroom clean
+=item C<vroom clean>
 
 Clean up all the compiled output files.
 
-=item vroom ghpublish
+=item C<vroom ghpublish>
 
 Creates a shell script in the current directory, that is intended to
 publish your slides to the special GitHub branch called gh-pages. See
@@ -89,7 +89,7 @@ publish your slides to the special GitHub branch called gh-pages. See
 This command does NOT run the script. It merely creates it for you. It is up
 to you to review the script and run it (if it makes sense on your system).
 
-=item vroom <action> --skip=#
+=item C<< vroom <action> --skip=# >>
 
 The skip option takes a number as its input and skips that number of files
 during compilation. This is useful when you are polishing your slides and are
@@ -99,7 +99,7 @@ finished with the first 50. You can say:
 
 and it will start on slide #51.
 
-=item vroom <action> --input=<file_name>
+=item C<< vroom <action> --input=<file_name> >>
 
 This option lets you specify an alternate input file name, instead of the
 default one, C<slides.vroom>.

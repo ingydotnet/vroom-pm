@@ -1,4 +1,9 @@
 ---
+version: 0.34
+date:    Sat Aug  9 00:28:19 PDT 2014
+changes:
+- Fix swim errors
+---
 version: 0.33
 date:    Fri Aug  8 12:59:46 PDT 2014
 changes:
