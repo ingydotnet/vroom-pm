@@ -12,7 +12,7 @@ ZILD := $(PERL) -S zild
 LOG := $(PERL_ZILLA_DIST_RELEASE_LOG)
 
 ifneq (,$(shell which zild))
-    NAMEPATH := $(shell $(ZILD) meta =cpan/libname)
+    NAMEPATH := $(shell $(ZILD) meta =zild/libname)
     NAMEPATH := $(subst ::,/,$(NAMEPATH))
 ifeq (,$(NAMEPATH))
     NAMEPATH := $(shell $(ZILD) meta name)
@@ -124,7 +124,7 @@ endif
 	make check-release
 	make date
 	make test-all
-	make test-dist
+	RELEASE_TESTING=1 make test-dist
 	@echo '***** Releasing $(DISTDIR)'
 	make dist
 ifneq ($(PERL_ZILLA_DIST_RELEASE_TIME),)
