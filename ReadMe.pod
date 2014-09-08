@@ -192,7 +192,7 @@ if the contents of your slide is unified diff output.
 Specifies that the slide is one of those syntaxen, and that the appropriate
 file extension will be used, thus causing vim to syntax highlight the slide.
 
-=item `.<ext>
+=item C<< .<ext> >>
 
 You can specify any extension by putting a period in front of it. Like C<.md>
 for MarkDown.
