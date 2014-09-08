@@ -174,10 +174,15 @@ Like this:
   to have characters special to Vroom at the beginning of your lines, for
   example if the contents of your slide is unified diff output.
 
-- perl,ruby,python,php,javascript,haskell,actionscript,html,yaml,xml,json,make,shell,diff
+- `perl,ruby,python,php,javascript,haskell,actionscript,html,yaml,xml,json,make,shell,diff`
 
   Specifies that the slide is one of those syntaxen, and that the appropriate
   file extension will be used, thus causing vim to syntax highlight the slide.
+
+- `.<ext>
+
+  You can specify any extension by putting a period in front of it. Like `.md`
+  for MarkDown.
 
 - include file-path-name
 

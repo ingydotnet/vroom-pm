@@ -84,7 +84,7 @@ endif
 
 test-all: test test-dev
 
-test-cpan: cpan
+test-cpan cpantest: cpan
 ifeq ($(wildcard pkg/no-test),)
 	@echo '***** Running tests in `cpan/` directory'
 	(cd cpan; $(PERL) -S prove -lv t) && make clean
@@ -92,7 +92,7 @@ else
 	@echo "Testing not available. Use 'test-dist' instead."
 endif
 
-test-dist: cpan
+test-dist disttest: cpan
 	@echo '***** Running tests in `$(DISTDIR)` directory'
 	(cd cpan; dzil test) && make clean
 
@@ -145,6 +145,11 @@ endif
 	git tag $(VERSION)
 	git push --tag
 	make clean
+ifneq ($(PERL_ZILLA_DIST_AUTO_INSTALL),)
+	@echo "***** Installing after release"
+	make install
+endif
+	@echo
 	git status
 	@echo
 	@[ -n "$$(which cowsay)" ] && cowsay "$(SUCCESS)" || echo "$(SUCCESS)"

@@ -635,6 +635,8 @@ sub parseSlideConfig {
             if $option =~ /^cd/;
         $config->{$1} = 1
             if $option =~ /^(config|skip|center|replace|$type_list)$/;
+        $config->{$1} = 1
+            if $option =~ /^(\.\w+)$/;
         $config->{indent} = $1
             if $option =~ /i(\d+)/;
         $config->{undent} = $1
@@ -695,6 +697,10 @@ sub applyOptions {
                 $ext = ".cd.$e";
                 last;
             }
+        }
+        elsif ($key =~ s/^\.(\w+)//) {
+            $ext = ".$1";
+            last;
         }
     }
     $self->ext($ext);
