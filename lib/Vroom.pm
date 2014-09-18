@@ -190,6 +190,14 @@ sub runSlide {
     elsif ($slide =~ /\.sh$/) {
         exec "clear; $ENV{SHELL} -i run.slide";
     }
+    elsif ($slide =~ /\.cf$/) {
+        # get current working directory - the input filename must be absolute to satisfy CFEngine's security model
+        use Cwd 'abs_path';
+        my $abs_path = abs_path("run.slide");
+        exec "clear; cf-agent -KI -f $abs_path";
+    }
+
+
 }
 
 sub trim_slide {
@@ -624,6 +632,7 @@ my $types = {
     make => 'make',
     diff => 'diff',
     conf => 'conf',
+    cfengine => 'cf',
 };
 sub parseSlideConfig {
     my $self = shift;
