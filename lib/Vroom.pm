@@ -241,15 +241,24 @@ sub makeHTML {
     io('html')->mkdir;
     my @slides = glob('0*');
     my @notes = $self->parse_notesfile;
+    my $index = [];
     for (my $i = 0; $i < @slides; $i++) {
         my $slide = $slides[$i];
         my $prev = ($i > 0) ? $slides[$i - 1] : 'index';
         my $next = ($i + 1 < @slides) ? $slides[$i + 1] : '';
         my $text = io($slide)->all;
+
+        my $title = $notes[$i]->{'title'};
+        unless ($title) {
+            $title = $text;
+            $title =~ s/.*?((?-s:\S.*)).*/$1/s;
+        }
+        $title = decode_utf8($title);
+
         $text = Template::Toolkit::Simple->new()->render(
             $self->slideTemplate,
             {
-                title => $notes[$i]->{'title'},
+                title => $title,
                 prev => $prev,
                 next => $next,
                 content => decode_utf8($text),
@@ -257,15 +266,11 @@ sub makeHTML {
             }
         );
         io("html/$slide.html")->print($text);
-    }
 
-    my $index = [];
-    for (my $i = 0; $i < @slides; $i++) {
-        my $slide = $slides[$i];
+        # Only add main slides to HTML index, not add-ons:
         next if $slide =~ /^\d+[a-z]/;
-        my $title = io($slide)->all;
-        $title =~ s/.*?((?-s:\S.*)).*/$1/s;
-        push @$index, [$slide, decode_utf8($title)];
+
+        push @$index, [$slide, $title];
     }
 
     io("html/index.html")->print(
