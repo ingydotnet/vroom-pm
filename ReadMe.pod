@@ -187,7 +187,7 @@ characters from the contents of the slide. This can be useful if you need to
 have characters special to Vroom at the beginning of your lines, for example
 if the contents of your slide is unified diff output.
 
-=item C<perl,ruby,python,php,javascript,haskell,actionscript,html,yaml,xml,json,make,shell,diff>
+=item C<perl,perl6,ruby,python,php,javascript,haskell,actionscript,html,yaml,xml,json,make,shell,diff>
 
 Specifies that the slide is one of those syntaxen, and that the appropriate
 file extension will be used, thus causing vim to syntax highlight the slide.
