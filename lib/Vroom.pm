@@ -166,6 +166,10 @@ sub runSlide {
     if ($slide =~ /\.pl$/) {
         exec "clear; $^X $slide";
     }
+    elsif ($slide =~ /\.p6$/) {
+        my $perl6_binary = $ENV{VROOM_PERL6_PATH} || 'perl6';
+        exec "clear; $perl6_binary $slide";
+    }
 
     $self->trim_slide;
 
@@ -607,8 +611,9 @@ sub formatNumber {
 }
 
 my $types = {
-    # add pl6 and py3
+    # add py3
     perl => 'pl', pl => 'pl', pm => 'pm',
+    perl6 => 'p6', p6 => 'p6', pm6 => 'pm6',
     ruby => 'rb', rb => 'rb',
     python => 'py', py => 'py',
     haskell => 'hs', hs => 'hs',
