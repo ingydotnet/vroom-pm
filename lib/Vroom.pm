@@ -14,7 +14,8 @@ our $VERSION = '0.29';
 use File::HomeDir 0.99;
 use IO::All 0.44;
 use Template::Toolkit::Simple 0.16;
-use Term::Size 0.207;
+# work in Linux and Windows too
+use Term::Size::Any qw( chars pixels );
 use YAML::XS 0.38;
 
 use Getopt::Long;
@@ -667,7 +668,7 @@ sub applyOptions {
         };
 
         if ($config->{auto_size}) {
-            my ($columns, $rows) = Term::Size::chars *STDOUT{IO};
+            my ($columns, $rows) = chars *STDOUT{IO};
 
             $config->{width}  = $columns;
             $config->{height} = $rows;
