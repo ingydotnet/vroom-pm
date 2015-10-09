@@ -8,6 +8,8 @@ use IO::All;
 use Template::Toolkit::Simple;
 use Term::Size::Any qw( chars pixels );
 use YAML::XS;
+use File::Spec;
+use File::Copy;
 
 use Getopt::Long;
 use Cwd;
@@ -226,10 +228,10 @@ sub makeText {
         my $num = $1;
         my $ext = $2 || '';
         my $text = io(-e "${num}z$ext" ? "${num}z$ext" : "$num$ext")->all();
-        io("text/$slide")->print($text);
+        io(catfile('text',$slide))->print($text);
     }
     eval {
-        system("cp .vimrc text");
+        copy('.vimrc','text');
     };
     $self->cleanUp;
 }
@@ -256,7 +258,7 @@ sub makeHTML {
                 notes => $self->htmlize_note($notes[$i]->{'text'}),
             }
         );
-        io("html/$slide.html")->print($text);
+        io(catfile('html',$slide.'.html'))->print($text);
     }
 
     my $index = [];
