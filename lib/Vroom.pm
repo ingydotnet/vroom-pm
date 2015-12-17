@@ -465,7 +465,7 @@ sub buildSlides {
                 $slide =~ s/^.{$undent}//gm;
             }
             $slide =~ s{^\ *==\ +(.*?)\ *$}
-                       {' ' x (($self->config->{width} - length($1)) / 2) . $1}gem;
+                       {' ' x (($self->config->{width} - length(decode_utf8($1))) / 2) . $1}gem;
             my $suf = $suffix++;
             $suf = $suf eq 'a'
                 ? ''
