@@ -674,7 +674,7 @@ sub applyOptions {
     $slide ||= '';
     if ($config->{center}) {
         $slide =~ s{^(\+?)\ *(.*?)\ *$}
-                   {$1 . ' ' x (($self->config->{width} - length($2)) / 2) . $2}gem;
+                   {$1 . ' ' x (($self->config->{width} - length(decode_utf8($2))) / 2) . $2}gem;
         $slide =~ s{^\s*$}{}gm;
     }
     elsif (defined $config->{indent}) {
