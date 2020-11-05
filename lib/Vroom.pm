@@ -717,6 +717,8 @@ sub padVertical {
     my @lines = split /\n/, $slide;
     my $lines = @lines;
     my $before = int(($self->config->{height} - $lines) / 2) - 1;
+    $before = 3 if $before > 3;
+    $before = 0 if $before < 0;
     return "\n" x $before . $slide;
 }
 
