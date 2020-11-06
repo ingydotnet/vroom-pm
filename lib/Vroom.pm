@@ -729,6 +729,7 @@ sub padFullScreen {
     my @lines = split /\n/, $slide;
     my $lines = @lines;
     my $after = $self->config->{height} - $lines + 1;
+    $after = 0 if $after < 0;
     return $slide . "\n" x $after;
 }
 
