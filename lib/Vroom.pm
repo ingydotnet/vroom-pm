@@ -211,6 +211,7 @@ sub makeSlides {
     $self->getInput;
     $self->buildSlides;
     $self->writeVimrc;
+    $self->writeExample;
     $self->writeScriptRunner;
     $self->writeHelp;
 }
@@ -730,6 +731,25 @@ sub padFullScreen {
     return $slide . "\n" x $after;
 }
 
+sub writeExample {
+    my $self = shift;
+
+    my $home_ex = File::HomeDir->my_home . "/.vroom/example.svg";
+    my $home_ex_content = -e $home_ex ? io($home_ex)->all : '';
+
+    io("example.svg")->print(<<"...");
+<!DOCTYPE html>
+<html>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="180">
+  <rect x="50" y="20" rx="20" ry="20" width="150" height="150" style="fill:red;stroke:black;stroke-width:5;opacity:0.5" />
+  Sorry, your browser does not support inline SVG.
+</svg>
+</body>
+</html>
+...
+}
+
 sub writeVimrc {
     my $self = shift;
 
@@ -785,6 +805,7 @@ map AA :call RunNow()<CR>:<CR>
 map VV :!vroom -vroom<CR>
 map QQ :q!<CR>
 map OO :!open <cWORD><CR><CR>
+map FF :!firefox <cWORD><CR>
 map EE :e <cWORD><CR>
 map !! G:!open <cWORD><CR><CR>
 map ?? :e .help<CR>
@@ -832,6 +853,7 @@ sub writeHelp {
     VV              vroom vroom
     EE              Edit file under cursor
     OO              Open file under cursor (Mac OS X)
+    FF              Open file under cursor in Firefox
 
 
     (Press SPACE to leave Help screen and continue)
@@ -911,7 +933,12 @@ by Ingy döt Net
 
 * Hit <SPACE> to move forward.
 * Hit <BACKSPACE> to go backwards.
-* Hit 'Q' to quit.
+* Hit 'QQ' to quit.
+* Hit 'EE' to edit the file under the cursor.
+* Hit 'FF' to open the file under the cursor in Firefox.
+* Hit 'OO' to open the file under the cursor with Mac OS X.
+
+example.svg
 
 ---- perl,i4
 # This is some Perl code.
