@@ -323,6 +323,13 @@ Edit the file that the cursor is on the filename of.
 You can put file path names in your slides, and then easily bring them up
 during your presentation.
 
+=item C<FF>
+
+Run the C<firefox> command on the argument that your cursor is on.
+
+For instance, if you want to open an SVG, you could put the file path of
+the SVG in your slide, then use FF to launch it.
+
 =item C<OO>
 
 On a Mac, run the OS X C<open> command on the argument that your cursor is on.
