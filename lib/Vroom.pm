@@ -145,9 +145,9 @@ sub cleanUp {
     unlink(glob "0*");
     unlink('.help');
     unlink('.vimrc');
-    unlink('example.svg');
     unlink('.gvimrc');
     unlink('run.slide');
+    unlink('example.svg');
     unlink($self->notesfile);
     io->dir('bin')->rmtree;
     io->dir('done')->rmtree;
