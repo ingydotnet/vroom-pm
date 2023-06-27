@@ -1,4 +1,10 @@
 ---
+version: 0.41
+date:    Tue Jun 27 09:48:50 AM EDT 2023
+changes:
+- Add option to align content at top of slides
+- Remove Travis
+---
 version: 0.37
 date:    Mon Sep  8 16:40:13 PDT 2014
 changes:
