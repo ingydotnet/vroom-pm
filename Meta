@@ -23,8 +23,6 @@ devel:
 
 requires:
   perl: 5.8.1
-
-requires:
   File::HomeDir: 0
   IO::All: 0
   Template::Toolkit::Simple: 0
