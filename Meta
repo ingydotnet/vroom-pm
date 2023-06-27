@@ -1,7 +1,7 @@
 =meta: 0.0.2
 
 name: Vroom
-version: 0.41
+version: 0.42
 abstract: Slide Shows in Vim
 homepage: https://metacpan.org/release/Vroom
 language: perl

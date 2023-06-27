@@ -1,4 +1,9 @@
 ---
+version: 0.42
+date:    Tue Jun 27 10:15:13 AM EDT 2023
+changes:
+- Switch from YAML::XS to YAML::PP
+---
 version: 0.41
 date:    Tue Jun 27 09:48:50 AM EDT 2023
 changes:
