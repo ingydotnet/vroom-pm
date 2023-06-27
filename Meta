@@ -27,7 +27,7 @@ requires:
   IO::All: 0
   Template::Toolkit::Simple: 0
   Term::Size: 0
-  YAML::XS: 0
+  YAML::PP: '0.036'
 
 =zild:
   no-about: true

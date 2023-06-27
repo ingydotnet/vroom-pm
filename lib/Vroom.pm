@@ -7,7 +7,7 @@ use File::HomeDir;
 use IO::All;
 use Template::Toolkit::Simple;
 use Term::Size;
-use YAML::XS;
+use YAML::PP;
 
 use Getopt::Long;
 use Cwd;
@@ -44,6 +44,8 @@ has config => {
     script => '',
     auto_size => 0,
 };
+
+my $ypp = YAML::PP->new;
 
 sub usage {
     return <<'...';
@@ -185,7 +187,7 @@ sub runSlide {
         exec "clear; runghc run.slide";
     }
     elsif ($slide =~ /\.yaml$/) {
-        exec "clear; $^X -MYAML::XS -MData::Dumper -e '\$Data::Dumper::Terse = 1; \$Data::Dumper::Indent = 1; print Dumper YAML::XS::LoadFile(shift)' run.slide";
+        exec "clear; $^X -MYAML::PP -MData::Dumper -e '\$Data::Dumper::Terse = 1; \$Data::Dumper::Indent = 1; print Dumper YAML::PP::LoadFile(shift)' run.slide";
     }
     elsif ($slide =~ /\.sh$/) {
         exec "clear; $ENV{SHELL} -i run.slide";
@@ -657,7 +659,7 @@ sub applyOptions {
     if ($config->{config}) {
         $config = {
             %{$self->config},
-            %{(YAML::XS::Load($slide))},
+            %{($ypp->load_string(decode_utf8 $slide))},
         };
 
         if ($config->{auto_size}) {
