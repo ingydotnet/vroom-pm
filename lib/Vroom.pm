@@ -718,7 +718,8 @@ sub padVertical {
     $slide =~ s/ +$//mg;
     my @lines = split /\n/, $slide;
     my $lines = @lines;
-    my $before = int(($self->config->{height} - $lines) / 2) - 1;
+    my $before = $self->config->{before} //
+        int(($self->config->{height} - $lines) / 2) - 1;
     if ($self->config->{top}) {
         $before = 3 if $before > 3;
         $before = 1 if $before < 1;
